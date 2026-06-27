@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dashboard Analítico e Inteligencia Predictiva | Tech Mobile Pro</title>
+  
+  <link rel="icon" type="image/x-icon" href="img/Tech-v1.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+  <style>
+    :root {
+      --brand-color: #BC6FF1;          
+      --bg-main: #0b0b0c;              
+      --bg-card: rgba(20, 20, 22, 0.7);
+      --border-color: rgba(255, 255, 255, 0.06);
+      --text-white: #FFFFFF;
+      --text-gray: #a1a1aa;
+      --text-muted: #71717a;
+      --radius-xl: 24px;
+      --radius-lg: 16px;               
+      --radius-md: 12px;               
+      --header-height: 72px; 
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif;}
+    body { background-color: var(--bg-main); color: var(--text-white); min-height: 100vh; padding-top: calc(var(--header-height) + 20px); padding-bottom: 60px; }
+
+    .fixed-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+      background: rgba(11, 11, 12, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color);
+      z-index: 2000; padding: 0 1.2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .dashboard-wrapper { max-width: 1400px; margin: 0 auto; padding: 0 1.2rem; display: flex; flex-direction: column; gap: 28px; }
+
+    .master-filter-bar { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.2rem; }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    .combo-container { position: relative; width: 100%; }
+
+    select { 
+      width: 100%; padding: 0.7rem 2.2rem 0.7rem 1rem; border-radius: var(--radius-md); background: #161618; 
+      border: 1px solid var(--border-color); color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; outline: none; appearance: none;
+    }
+    .combo-container i { position: absolute; right: 0.8rem; top: 0.85rem; pointer-events: none; color: var(--brand-color); font-size: 0.75rem; }
+
+    .card-header-actions { display: flex; align-items: center; gap: 12px; min-width: 280px; }
+
+    .full-width-card {
+      background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl);
+      padding: 1.8rem; display: flex; flex-direction: column; gap: 20px; width: 100%;
+    }
+
+    .chart-card-header {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03); padding-bottom: 1rem;
+    }
+    .chart-card-header h3 { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .chart-container { position: relative; width: 100%; height: 350px; }
+
+    .insights-subgrid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 8px;
+    }
+    .insight-pill {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+      padding: 1rem; display: flex; flex-direction: column; gap: 4px;
+    }
+    .insight-pill span { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .insight-pill p { font-size: 1.2rem; font-weight: 800; }
+
+    .table-responsive {
+      width: 100%; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); background: rgba(0,0,0,0.15);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+    th { background: #161618; color: var(--text-muted); padding: 0.7rem 1rem; font-weight: 700; position: sticky; top: 0; }
+    td { padding: 0.7rem 1rem; color: var(--text-gray); border-bottom: 1px solid rgba(255,255,255,0.02); }
+    
+    .txt-profit { color: #4ade80; font-weight: 700; }
+    .txt-loss { color: #f87171; font-weight: 700; }
+
+    .loader-container { position: fixed; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 3000; transition: opacity 0.3s; }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(188, 111, 241, 0.1); border-top-color: var(--brand-color); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="loader" class="loader-container"><div class="spinner"></div></div>
+
+  <header class="fixed-header">
+    <h1><i class="bi bi-cpu-fill" style="color:var(--brand-color); margin-right:8px;"></i> Consola Avanzada de Inteligencia de Datos</h1>
+  </header>
+
+  <main class="dashboard-wrapper">
+    
+    <div class="master-filter-bar">
+      <div class="filter-group">
+        <label><i class="bi bi-funnel-fill"></i> Llave de Filtrado General (Estado)</label>
+        <div class="combo-container">
+          <select id="statusFilter" onchange="processAllCalculations()">
+            <option value="all">Ver Todos los Estados de Orden</option>
+          </select>
+          <i class="bi bi-chevron-down"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="full-width-card">
+      <div class="chart-card-header">
+        <h3><i class="bi bi-graph-up-arrow" style="color:#4ade80; margin-right:6px;"></i> 1. Histórico Sumatoria Ganancia Neta</h3>
+        <div class="card-header-actions">
+          <div class="combo-container">
+            <select id="netTimeScale" onchange="calculateNetProfitModule()">
+              <option value="day">Escala: Por Día</option>
+              <option value="month" selected>Escala: Por Mes (De cada Año)</option>
+              <option value="year">Escala: Por Año Completo</option>
+              <option value="all">Escala: Consolidado Total</option>
+            </select>
+            <i class="bi bi-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="netProfitChart"></canvas></div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Ventana Temporal de Rendimiento</th><th>Suma de Ganancia Neta</th></tr></thead>
+          <tbody id="netProfitTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="full-width-card">
+      <div class="chart-card-header">
+        <h3><i class="bi bi-lightning-charge-fill" style="color:#f59e0b; margin-right:6px;"></i> 2. Análisis de Días Críticos y Predicción de Comportamiento Futuro</h3>
+        <div class="card-header-actions">
+          <div class="combo-container">
+            <select id="seasonalityType" onchange="calculatePredictiveModule()">
+              <option value="weekday" selected>Analizar por: Día de la Semana (Lun - Dom)</option>
+              <option value="monthday">Analizar por: Día del Mes (1 - 31)</option>
+            </select>
+            <i class="bi bi-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="insights-subgrid">
+        <div class="insight-pill" style="border-left: 4px solid #4ade80;">
+          <span>Día de Mayor Venta</span>
+          <p id="bestDayLabel">Cargando...</p>
+        </div>
+        <div class="insight-pill" style="border-left: 4px solid #f87171;">
+          <span>Día de Menor Venta</span>
+          <p id="worstDayLabel">Cargando...</p>
+        </div>
+        <div class="insight-pill" style="border-left: 4px solid #bc6ff1;">
+          <span>Tendencia Proyectada Próximo Período</span>
+          <p id="predictionTrendLabel" style="color:#bc6ff1;">Calculando...</p>
+        </div>
+      </div>
+
+      <div class="chart-container"><canvas id="predictiveChart"></canvas></div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -8px;">
+        * La curva continua (púrpura) muestra la proyección matemática adaptada según tus pesos estacionales históricos para los próximos ciclos.
+      </p>
+    </div>
+
+    <div class="full-width-card">
+      <div class="chart-card-header">
+        <h3><i class="bi bi-diagram-3-fill" style="color:#57c1ff; margin-right:6px;"></i> 3. Sumatoria de Ganancia Neta por Distribuidor</h3>
+        <div class="card-header-actions">
+          <div class="combo-container">
+            <select id="provTimeScale" onchange="calculateProviderModule()">
+              <option value="day">Segmentar por Día</option>
+              <option value="month">Segmentar por Mes (De cada Año)</option>
+              <option value="year">Segmentar por Año Completo</option>
+              <option value="all" selected>Segmentar por Histórico Total (Consolidado)</option>
+            </select>
+            <i class="bi bi-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="providerChart"></canvas></div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Distribuidor / Fabricante</th><th>Intervalo Asignado</th><th>Suma de Ganancia Neta</th></tr></thead>
+          <tbody id="providerTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Registrar el plugin globalmente para que todas las instancias de Chart.js lo reconozcan
+    Chart.register(ChartDataLabels);
+
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRqzrXTFWY1YHLwNSgeD_qaoASKEKvUYbiJxapGEwOBxLhbWyCn_Rmvg3c3bT4EaDs5B1cgNQatXTbO/pub?output=csv";
+    
+    let rawData = [];
+    let chartNet = null;
+    let chartProv = null;
+    let chartPred = null;
+    
+    const keys = { date: 'fecha', profit: 'ganancia neta', provider: 'distribuidor', status: 'estado' };
+
+    async function init() {
+      try {
+        const res = await fetch(CSV_URL);
+        const text = await res.text();
+        rawData = csvToJSON(text);
+        if(!rawData.length) return;
+
+        buildStatusFilter();
+        processAllCalculations();
+
+        document.getElementById('loader').style.opacity = '0';
+        setTimeout(() => document.getElementById('loader').style.display = 'none', 300);
+      } catch(e) { console.error("Error cargando los elementos visuales: ", e); }
+    }
+
+    function csvToJSON(csv) {
+      const lines = csv.split(/\r?\n/);
+      const result = [];
+      if (!lines.length || !lines[0]) return result;
+      const headers = lines[0].split(",").map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        const obj = {};
+        headers.forEach((header, index) => {
+          let value = currentline[index] ? currentline[index].trim() : "";
+          obj[header] = value.replace(/^"|"$/g, ''); 
+        });
+        result.push(obj);
+      }
+      return result;
+    }
+
+    function buildStatusFilter() {
+      const select = document.getElementById('statusFilter');
+      const statuses = [...new Set(rawData.map(r => r[keys.status]))].filter(Boolean);
+      statuses.forEach(st => {
+        let op = document.createElement('option'); op.value = st; op.textContent = st.toUpperCase();
+        select.appendChild(op);
+      });
+    }
+
+    function parseNum(v) {
+      if(!v) return 0;
+      let c = parseFloat(v.replace(/[^0-9.-]+/g, ""));
+      return isNaN(c) ? 0 : c;
+    }
+
+    function parseDateObj(dateStr) {
+      if(!dateStr) return null;
+      const p = dateStr.split(/[\/\-]/);
+      if(p.length < 3) return null;
+      let d = p[0].length === 4 ? parseInt(p[2]) : parseInt(p[0]);
+      let m = p[0].length === 4 ? parseInt(p[1]) : parseInt(p[1]);
+      let y = p[0].length === 4 ? parseInt(p[0]) : parseInt(p[2]);
+      return new Date(y, m - 1, d);
+    }
+
+    function getPeriod(dateStr, scale) {
+      if(!dateStr) return 'S/F';
+      if(scale === 'all') return 'Consolidado';
+      const p = dateStr.split(/[\/\-]/);
+      let d = p[0].length === 4 ? p[2] : p[0];
+      let m = p[0].length === 4 ? p[1] : p[1];
+      let y = p[0].length === 4 ? p[0] : p[2];
+
+      if(scale === 'year') return `${y}`;
+      if(scale === 'month') {
+        const mNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        return mNames[parseInt(m)-1] + " " + y;
+      }
+      return `${d}/${m}/${y}`;
+    }
+
+    function processAllCalculations() {
+      calculateNetProfitModule();
+      calculatePredictiveModule();
+      calculateProviderModule();
+    }
+
+    function calculateNetProfitModule() {
+      const scale = document.getElementById('netTimeScale').value;
+      const status = document.getElementById('statusFilter').value;
+      let dataset = rawData.filter(row => status === 'all' || row[keys.status] === status);
+
+      let netSumData = {};
+      dataset.forEach(row => {
+        let period = getPeriod(row[keys.date], scale);
+        netSumData[period] = (netSumData[period] || 0) + parseNum(row[keys.profit]);
+      });
+      renderNetChartAndTable(netSumData);
+    }
+
+    function calculatePredictiveModule() {
+      const mode = document.getElementById('seasonalityType').value;
+      const status = document.getElementById('statusFilter').value;
+      let dataset = rawData.filter(row => status === 'all' || row[keys.status] === status);
+
+      const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+      let analysisMap = {};
+      
+      if(mode === 'weekday') {
+        for(let i=0; i<7; i++) analysisMap[i] = { label: dayNames[i], totalSales: 0, count: 0 };
+      } else {
+        for(let i=1; i<=31; i++) analysisMap[i] = { label: `Día ${i}`, totalSales: 0, count: 0 };
+      }
+
+      dataset.forEach(row => {
+        let dObj = parseDateObj(row[keys.date]);
+        if(!dObj) return;
+        let bucketKey = (mode === 'weekday') ? dObj.getDay() : dObj.getDate();
+        let profit = parseNum(row[keys.profit]);
+        if(analysisMap[bucketKey]) {
+          analysisMap[bucketKey].totalSales += profit;
+          analysisMap[bucketKey].count += 1;
+        }
+      });
+
+      let validEntries = Object.keys(analysisMap).map(k => {
+        let item = analysisMap[k];
+        item.average = item.count > 0 ? (item.totalSales / item.count) : 0;
+        return { key: k, ...item };
+      });
+
+      let sortedByAvg = [...validEntries].filter(e => e.totalSales > 0).sort((a,b) => b.average - a.average);
+      if(sortedByAvg.length > 0) {
+        document.getElementById('bestDayLabel').innerHTML = `${sortedByAvg[0].label} <br><span class="txt-profit">Prom: Q ${sortedByAvg[0].average.toFixed(2)}</span>`;
+        document.getElementById('worstDayLabel').innerHTML = `${sortedByAvg[sortedByAvg.length - 1].label} <br><span class="txt-loss">Prom: Q ${sortedByAvg[sortedByAvg.length - 1].average.toFixed(2)}</span>`;
+      }
+
+      let avgGlobalProfit = validEntries.reduce((acc, curr) => acc + curr.average, 0) / validEntries.length;
+      let chartLabels = [], historicals = [], predictions = [];
+
+      validEntries.forEach(e => {
+        chartLabels.push(e.label);
+        historicals.push(e.totalSales > 0 ? e.average : null);
+        let weightFactor = avgGlobalProfit > 0 ? (e.average / avgGlobalProfit) : 1;
+        if(weightFactor === 0) weightFactor = 0.6;
+        predictions.push(avgGlobalProfit * weightFactor * 1.04);
+      });
+
+      document.getElementById('predictionTrendLabel').innerHTML = `Estable / Orgánico<br><span>Objetivo: Q ${(avgGlobalProfit * 1.04).toFixed(2)}</span>`;
+      renderPredictiveChart(chartLabels, historicals, predictions);
+    }
+
+    function renderNetChartAndTable(dataMap) {
+      const labels = Object.keys(dataMap);
+      const values = Object.values(dataMap);
+      const tbody = document.getElementById('netProfitTableBody');
+      tbody.innerHTML = '';
+      labels.forEach((l, i) => {
+        tbody.innerHTML += `<tr><td><strong>${l}</strong></td><td class="txt-profit">Q ${values[i].toLocaleString('es-GT',{minimumFractionDigits:2})}</td></tr>`;
+      });
+
+      const ctx = document.getElementById('netProfitChart').getContext('2d');
+      if(chartNet) chartNet.destroy();
+      chartNet = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.01)', borderWidth: 3.5, fill: true, tension: 0.15 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              align: 'top',
+              anchor: 'end',
+              color: '#4ade80',
+              font: { weight: 'bold', size: 10 },
+              formatter: (value) => value > 0 ? 'Q' + Math.round(value).toLocaleString('es-GT') : ''
+            }
+          },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#a1a1aa' }, padding: 15 },
+            x: { grid: { display: false }, ticks: { color: '#a1a1aa' } }
+          }
+        }
+      });
+    }
+
+    function renderPredictiveChart(labels, historicals, predictions) {
+      const ctx = document.getElementById('predictiveChart').getContext('2d');
+      if(chartPred) chartPred.destroy();
+
+      chartPred = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Rendimiento Histórico Real (Promedio)',
+              data: historicals,
+              backgroundColor: 'rgba(245, 158, 11, 0.4)',
+              borderColor: '#f59e0b',
+              borderWidth: 1.5,
+              borderRadius: 4,
+              order: 2,
+              datalabels: { align: 'center', anchor: 'center', color: '#fff', font: { size: 9, weight: '600' }, formatter: (v) => v ? 'Q' + Math.round(v) : '' }
+            },
+            {
+              label: 'Comportamiento Futuro Proyectado',
+              data: predictions,
+              type: 'line',
+              borderColor: '#bc6ff1',
+              borderWidth: 3,
+              pointBackgroundColor: '#bc6ff1',
+              fill: false,
+              tension: 0.35,
+              order: 1,
+              datalabels: { align: 'top', anchor: 'end', color: '#bc6ff1', font: { size: 10, weight: '700' }, formatter: (v) => 'Q' + Math.round(v) }
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, labels: { color: '#a1a1aa', font: { size: 11, weight: '600' } } }
+          },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#a1a1aa' } },
+            x: { grid: { display: false }, ticks: { color: '#a1a1aa' } }
+          }
+        }
+      });
+    }
+
+    function calculateProviderModule() {
+      const scale = document.getElementById('provTimeScale').value;
+      const status = document.getElementById('statusFilter').value;
+      let dataset = rawData.filter(row => status === 'all' || row[keys.status] === status);
+
+      let provSumData = {};
+      dataset.forEach(row => {
+        let prov = row[keys.provider] || 'Sin Especificar';
+        let period = getPeriod(row[keys.date], scale);
+        let key = scale === 'all' ? prov : `${prov} (${period})`;
+        if(!provSumData[key]) provSumData[key] = { prov: prov, period: period, total: 0 };
+        provSumData[key].total += parseNum(row[keys.profit]);
+      });
+      renderProviderChartAndTable(provSumData);
+    }
+
+    function renderProviderChartAndTable(dataMap) {
+      const entries = Object.values(dataMap).sort((a,b) => b.total - a.total).slice(0, 15); // Reducido a 15 para evitar saturación de texto
+      const labels = entries.map(e => e.prov + (e.period !== 'Consolidado' ? ` [${e.period}]` : ''));
+      const values = entries.map(e => e.total);
+
+      const tbody = document.getElementById('providerTableBody');
+      tbody.innerHTML = '';
+      entries.forEach(e => {
+        tbody.innerHTML += `<tr><td><strong>${e.prov}</strong></td><td><small>${e.period}</small></td><td class="txt-profit" style="color:#57c1ff">Q ${e.total.toLocaleString('es-GT',{minimumFractionDigits:2})}</td></tr>`;
+      });
+
+      const ctx = document.getElementById('providerChart').getContext('2d');
+      if(chartProv) chartProv.destroy();
+      chartProv = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: '#57c1ff', borderRadius: 4 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              align: 'top',
+              anchor: 'end',
+              color: '#57c1ff',
+              font: { weight: 'bold', size: 9.5 },
+              formatter: (v) => v > 0 ? 'Q' + Math.round(v).toLocaleString('es-GT') : ''
+            }
+          },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#a1a1aa' } },
+            x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { size: 9 } } }
+          }
+        }
+      });
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
