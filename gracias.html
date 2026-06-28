@@ -9,34 +9,110 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f0faf4 0%, #e8f5e9 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    .card { background: white; border-radius: 24px; padding: 3rem 2rem; text-align: center; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.08); }
-    .icon { font-size: 5rem; color: #1a8a3d; margin-bottom: 1rem; animation: pop 0.4s ease; }
-    @keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.15); } 100% { transform: scale(1); } }
-    h1 { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem; }
-    p { font-size: 0.95rem; color: #666; line-height: 1.6; margin-bottom: 1.5rem; }
-    .badge { background: #f0faf4; border: 1.5px solid #c3e6cb; border-radius: 50px; padding: 8px 20px; font-size: 0.82rem; font-weight: 700; color: #1a8a3d; display: inline-block; margin-bottom: 1.5rem; }
-    .btn { display: inline-block; background: linear-gradient(135deg, #1a8a3d, #177535); color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.95rem; margin: 6px; box-shadow: 0 4px 15px rgba(26,138,61,0.25); transition: opacity 0.2s; }
+    .card { background: white; border-radius: 24px; padding: 2.5rem 2rem; text-align: center; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.08); }
+    .icon { font-size: 4.5rem; color: #1a8a3d; margin-bottom: 1rem; animation: pop 0.4s ease; }
+    @keyframes pop { 0%{transform:scale(0)} 80%{transform:scale(1.15)} 100%{transform:scale(1)} }
+    h1 { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.4rem; }
+    .badge { background: #f0faf4; border: 1.5px solid #c3e6cb; border-radius: 50px; padding: 6px 18px; font-size: 0.8rem; font-weight: 700; color: #1a8a3d; display: inline-block; margin-bottom: 1.2rem; }
+    .resumen { background: #f8faff; border: 1.5px solid #e4eaf5; border-radius: 14px; padding: 1.2rem; text-align: left; margin-bottom: 1.2rem; }
+    .resumen h3 { font-size: 0.85rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .resumen-item { display: flex; justify-content: space-between; font-size: 0.8rem; color: #555; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+    .resumen-item:last-child { border-bottom: none; }
+    .resumen-item.total { font-weight: 800; color: #1a1a2e; font-size: 0.92rem; margin-top: 4px; padding-top: 8px; border-top: 2px solid #e4eaf5; border-bottom: none; }
+    .resumen-item.comision { color: #7c6200; font-size: 0.75rem; }
+    .wa-box { background: #f0fef4; border: 1.5px solid #c3e6cb; border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
+    .wa-box p { font-size: 0.82rem; color: #555; margin-bottom: 0.8rem; line-height: 1.5; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.92rem; margin: 5px; box-shadow: 0 4px 15px rgba(37,211,102,0.3); transition: opacity 0.2s; width: 100%; justify-content: center; }
     .btn:hover { opacity: 0.88; }
-    .btn-wa { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 4px 15px rgba(37,211,102,0.25); }
-    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1.5rem 0; }
-    .note { font-size: 0.8rem; color: #aaa; }
+    .btn-cat { background: linear-gradient(135deg, #1a1a2e, #2d3561); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
+    .nota { font-size: 0.75rem; color: #aaa; line-height: 1.5; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon"><i class="bi bi-check-circle-fill"></i></div>
-    <h1>¡Pago Exitoso!</h1>
-    <div class="badge">✅ Pago confirmado con tarjeta</div>
-    <p>Tu pedido ha sido recibido y procesado correctamente. Nos pondremos en contacto contigo pronto para coordinar la entrega.</p>
-    <hr class="divider">
-    <p class="note">¿Tenés alguna duda? Escribinos por WhatsApp.</p>
-    <br>
-    <a href="https://wa.me/50241084481" class="btn btn-wa" target="_blank">
-      <i class="bi bi-whatsapp"></i> Contactar por WhatsApp
-    </a>
-    <a href="index.html" class="btn">
-      <i class="bi bi-house"></i> Volver al Catálogo
+<div class="card">
+  <div class="icon"><i class="bi bi-check-circle-fill"></i></div>
+  <h1>¡Pago Exitoso!</h1>
+  <div class="badge">✅ Pago confirmado con tarjeta</div>
+
+  <div class="resumen" id="resumen-pedido" style="display:none">
+    <h3>📦 Resumen de tu pedido</h3>
+    <div id="lista-items"></div>
+    <div class="resumen-item"><span>Envío (<span id="zona-txt"></span>)</span><span id="envio-txt"></span></div>
+    <div class="resumen-item comision"><span>Comisión tarjeta (4.5% + Q2)</span><span id="comision-txt"></span></div>
+    <div class="resumen-item total"><span>Total pagado</span><span id="total-txt"></span></div>
+    <div id="notas-box" style="display:none;margin-top:8px;font-size:0.78rem;color:#666;background:#fff;border-radius:8px;padding:8px">
+      <strong>📝 Notas:</strong> <span id="notas-txt"></span>
+    </div>
+  </div>
+
+  <div class="wa-box">
+    <p>Confirmá tu pedido por WhatsApp para coordinar la entrega. Te contactaremos pronto. 🚀</p>
+    <a class="btn" id="btn-wa" href="#" target="_blank">
+      <i class="bi bi-whatsapp"></i> Confirmar pedido por WhatsApp
     </a>
   </div>
+
+  <hr class="divider">
+  <a href="index.html" class="btn btn-cat">
+    <i class="bi bi-house"></i> Volver al Catálogo
+  </a>
+  <p class="nota" style="margin-top:1rem">¿Preguntas? Escribinos a cualquier hora por WhatsApp.</p>
+</div>
+
+<script>
+  const WA_NUMBER = "50241084481";
+  const NEGOCIO   = "Guate 3D Labs";
+
+  const p = new URLSearchParams(window.location.search);
+  const items    = p.get('items')    || '';
+  const subtotal = p.get('subtotal') || '';
+  const envio    = p.get('envio')    || '';
+  const zona     = p.get('zona')     || '';
+  const comision = p.get('comision') || '';
+  const total    = p.get('total')    || '';
+  const notas    = p.get('notas')    || '';
+
+  if (items) {
+    document.getElementById('resumen-pedido').style.display = 'block';
+
+    // Lista de productos
+    const listaEl = document.getElementById('lista-items');
+    items.split('|').forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'resumen-item';
+      const parts = item.split(' Q');
+      div.innerHTML = `<span>${parts[0]}</span><span>Q${parts[1] || ''}</span>`;
+      listaEl.appendChild(div);
+    });
+
+    document.getElementById('zona-txt').textContent     = zona;
+    document.getElementById('envio-txt').textContent    = `Q${parseFloat(envio).toFixed(2)}`;
+    document.getElementById('comision-txt').textContent = `Q${parseFloat(comision).toFixed(2)}`;
+    document.getElementById('total-txt').textContent    = `Q${parseFloat(total).toFixed(2)}`;
+
+    if (notas.trim()) {
+      document.getElementById('notas-box').style.display = 'block';
+      document.getElementById('notas-txt').textContent = notas;
+    }
+
+    // Armar mensaje WhatsApp
+    let msg = `✅ *¡Pago con tarjeta confirmado!*%0A`;
+    msg += `*Negocio:* ${NEGOCIO}%0A%0A`;
+    msg += `*📦 Detalle del pedido:*%0A`;
+    items.split('|').forEach(item => { msg += `• ${item}%0A`; });
+    msg += `%0A*Zona de entrega:* ${zona}%0A`;
+    msg += `*Envío:* Q${parseFloat(envio).toFixed(2)}%0A`;
+    msg += `*Comisión tarjeta:* Q${parseFloat(comision).toFixed(2)}%0A`;
+    msg += `*TOTAL PAGADO:* Q${parseFloat(total).toFixed(2)}%0A`;
+    if (notas.trim()) msg += `%0A*📝 Notas:* ${encodeURIComponent(notas)}%0A`;
+    msg += `%0A¡Gracias por tu compra! 🙌`;
+
+    document.getElementById('btn-wa').href = `https://wa.me/${WA_NUMBER}?text=${msg}`;
+  } else {
+    // Sin datos — mensaje genérico
+    document.getElementById('btn-wa').href = `https://wa.me/${WA_NUMBER}?text=✅ ¡Hola! Acabo de completar un pago con tarjeta en ${NEGOCIO}. ¿Pueden confirmar mi pedido?`;
+  }
+</script>
 </body>
 </html>

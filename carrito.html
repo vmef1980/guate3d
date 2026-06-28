@@ -298,6 +298,10 @@
         <div class="op">
           <label><input type="radio" name="pago" value="tarjeta" checked> <span>💳 <strong>Pagar con Tarjeta</strong> — Visa / Mastercard (seguro y rápido)</span></label>
         </div>
+        <div class="comision-info" id="aviso-comision">
+          <i class="bi bi-info-circle"></i> <strong>¿Por qué hay una comisión?</strong><br>
+          Al pagar con tarjeta, el banco y el procesador de pagos cobran una tarifa de <strong>4.5% + Q2</strong> por cada transacción. Este costo lo trasladamos directamente — no ganamos nada sobre él. Si preferís evitarla, podés pagar por <strong>Transferencia Bancaria</strong> (sin comisión) o <strong>Contraentrega</strong>.
+        </div>
         <div class="op">
           <label><input type="radio" name="pago" value="t"> <span>🏦 Transferencia / Depósito Bancario</span></label>
         </div>
@@ -313,6 +317,8 @@
         <div class="l"><span>Subtotal</span> <span id="sub">Q0.00</span></div>
         <div class="l"><span>Envío estimado</span> <span id="env">Q40.00</span></div>
         <div class="l" id="rec" style="display:none;color:#e74c3c"><span>Recargo contraentrega (5%)</span> <span id="re">Q0.00</span></div>
+        <div class="l" id="fila-comision" style="display:none;color:#7c6200;font-size:0.82rem"><span>Comisión tarjeta (4.5% + Q2) <i class="bi bi-info-circle"></i></span> <span id="comision-monto">Q0.00</span></div>
+
         <div class="l tot"><span>Total a pagar</span> <strong id="tot">Q40.00</strong></div>
       </div>
 
@@ -435,7 +441,7 @@
       $('env').textContent = `${CONFIG.simboloMoneda}${envio.toFixed(2)}`;
       $('rec').style.display = recargo ? "flex" : "none";
       $('re').textContent = `${CONFIG.simboloMoneda}${recargo.toFixed(2)}`;
-      $('tot').textContent = `${CONFIG.simboloMoneda}${(subtotal + envio + recargo).toFixed(2)}`;
+      $('tot').textContent = `${CONFIG.simboloMoneda}${(subtotal + envio + recargo + comision).toFixed(2)}`;
     };
 
     // NUEVA FUNCIÓN: Cambiar cantidad
@@ -462,7 +468,7 @@
     };
 
       // ══ RECURRENTE CONFIG ══
-      const RECURRENTE_API_KEY = "sk_test_ktQms1PGCXfAAEaESrJ5tRG5RfQBs5SVQqoY9c6dREgCftY6b5Pbwm5H"; // ← Reemplazá con tu llave de Recurrente
+      const RECURRENTE_API_KEY = "sk_test_VjbxwuixxwhcKi4zewc8hGDzzimSBZxk9eFxKyQncYDbe3HrmaBZarCL"; // ← Reemplazá con tu llave de Recurrente
       const SUCCESS_URL = "https://guate3d.rompecabezas.online/gracias.html";
       const CANCEL_URL  = "https://guate3d.rompecabezas.online/cancelado.html";
 
@@ -487,6 +493,7 @@
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Procesando...';
 
         try {
+          // Monto sin comisión — la absorbemos nosotros
           const lineItems = items.map(i => ({
             name: i.titulo,
             amount_in_cents: Math.round(i.precio * 100),
@@ -495,12 +502,29 @@
           }));
           lineItems.push({ name: "Costo de envío", amount_in_cents: envio * 100, currency: "GTQ", quantity: 1 });
 
+          // Preparar resumen del pedido para pasar a gracias.html
+          const resumenItems = items.map(i => `${i.titulo} x${i.c} Q${i.t.toFixed(2)}`).join('|');
+          const subtotalFinal = items.reduce((a,b)=>a+b.t,0);
+          const comisionFinal = (subtotalFinal + envio) * 0.045 + 2;
+          const totalFinal = subtotalFinal + envio + comisionFinal;
+          const ztxt = zona.selectedOptions[0].text.split(' - ')[0];
+
+          const successParams = new URLSearchParams({
+            items: resumenItems,
+            subtotal: subtotalFinal.toFixed(2),
+            envio: envio,
+            zona: ztxt,
+            comision: comisionFinal.toFixed(2),
+            total: totalFinal.toFixed(2),
+            notas: notas_v
+          });
+
           const res = await fetch("https://app.recurrente.com/api/checkouts", {
             method: "POST",
             headers: { "X-SECRET-KEY": RECURRENTE_API_KEY, "Content-Type": "application/json" },
             body: JSON.stringify({
               items: lineItems,
-              success_url: SUCCESS_URL,
+              success_url: SUCCESS_URL + '?' + successParams.toString(),
               cancel_url: CANCEL_URL,
               metadata: { notas: notas_v }
             })
