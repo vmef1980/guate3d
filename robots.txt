@@ -1,0 +1,15 @@
+# robots.txt — Guate3D
+# https://guate3d.rompecabezas.online/
+
+User-agent: *
+Disallow:
+Allow: /
+
+# Bloquear panel de admin y archivos innecesarios
+Disallow: /admin.html
+Disallow: /img/
+Disallow: /*.ico$
+Disallow: /*.png$
+Disallow: /*.jpg$
+
+Sitemap: https://guate3d.rompecabezas.online/sitemap.xml
