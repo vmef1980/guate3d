@@ -194,6 +194,10 @@
       cursor: pointer;
     }
     .op label { cursor: pointer; display: flex; align-items: center; gap: 10px; width: 100%; }
+    .op:first-of-type { background: #f0faf4; border: 2px solid #1a8a3d; border-radius: 10px; padding: 4px 8px; }
+    .op:first-of-type span { color: #1a8a3d; }
+    #btn-pagar { background: linear-gradient(135deg, #1a8a3d, #177535); }
+    .recurrente-loading { display:none; text-align:center; padding: 1rem; color: #666; font-size: 0.85rem; }
     .op input[type="radio"] { accent-color: var(--primary); width: 18px; height: 18px; }
 
     .n {
@@ -292,10 +296,13 @@
 
         <h3 style="margin-top:1.5rem"><i class="bi bi-credit-card"></i> Método de Pago</h3>
         <div class="op">
-          <label><input type="radio" name="pago" value="t" checked> <span>Transferencia / Depósito Bancario</span></label>
+          <label><input type="radio" name="pago" value="tarjeta" checked> <span>💳 <strong>Pagar con Tarjeta</strong> — Visa / Mastercard (seguro y rápido)</span></label>
         </div>
         <div class="op">
-          <label><input type="radio" name="pago" value="c"> <span>Contraentrega <b style="color:#e74c3c">(+5% en Deptos.)</b></span></label>
+          <label><input type="radio" name="pago" value="t"> <span>🏦 Transferencia / Depósito Bancario</span></label>
+        </div>
+        <div class="op">
+          <label><input type="radio" name="pago" value="c"> <span>💵 Contraentrega <b style="color:#e74c3c">(+5% en Deptos.)</b></span></label>
         </div>
 
         <h3 style="margin-top:1.5rem"><i class="bi bi-chat-left-text"></i> Notas del pedido</h3>
@@ -309,7 +316,7 @@
         <div class="l tot"><span>Total a pagar</span> <strong id="tot">Q40.00</strong></div>
       </div>
 
-      <button class="btn" onclick="fin()"><i class="bi bi-whatsapp"></i> Enviar pedido por WhatsApp</button>
+      <button class="btn" id="btn-pagar" onclick="procesarPago()"><i class="bi bi-bag-check"></i> Confirmar Pedido</button>
       <button class="btn-vaciar" onclick="vaciarCarrito()">Vaciar carrito</button>
     </div>
 
@@ -453,6 +460,64 @@
         act();
       }
     };
+
+      // ══ RECURRENTE CONFIG ══
+      const RECURRENTE_API_KEY = "sk_test_ktQms1PGCXfAAEaESrJ5tRG5RfQBs5SVQqoY9c6dREgCftY6b5Pbwm5H"; // ← Reemplazá con tu llave de Recurrente
+      const SUCCESS_URL = "https://guate3d.rompecabezas.online/gracias.html";
+      const CANCEL_URL  = "https://guate3d.rompecabezas.online/cancelado.html";
+
+      window.procesarPago = async function() {
+        const metodoPago = document.querySelector('input[name="pago"]:checked')?.value;
+        if (metodoPago === "tarjeta") {
+          await pagarConTarjeta();
+        } else {
+          window.fin();
+        }
+      };
+
+      async function pagarConTarjeta() {
+        const items    = agrupar();
+        const subtotal = items.reduce((a,b)=>a+b.t,0);
+        const envio    = +zona.value;
+        const notas_v  = notas.value;
+        if (!items.length) { alert("Tu carrito está vacío."); return; }
+
+        const btn = document.getElementById("btn-pagar");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Procesando...';
+
+        try {
+          const lineItems = items.map(i => ({
+            name: i.titulo,
+            amount_in_cents: Math.round(i.precio * 100),
+            currency: "GTQ",
+            quantity: i.c
+          }));
+          lineItems.push({ name: "Costo de envío", amount_in_cents: envio * 100, currency: "GTQ", quantity: 1 });
+
+          const res = await fetch("https://app.recurrente.com/api/checkouts", {
+            method: "POST",
+            headers: { "X-SECRET-KEY": RECURRENTE_API_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              items: lineItems,
+              success_url: SUCCESS_URL,
+              cancel_url: CANCEL_URL,
+              metadata: { notas: notas_v }
+            })
+          });
+
+          const data = await res.json();
+          if (data.checkout_url) {
+            window.location.href = data.checkout_url;
+          } else {
+            throw new Error(data.error || "No se pudo crear el checkout");
+          }
+        } catch(err) {
+          alert("Error al procesar el pago: " + err.message + "\nIntentá de nuevo o usá otro método de pago.");
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-bag-check"></i> Confirmar Pedido';
+        }
+      }
 
     window.fin = () => {
       const items = agrupar();
