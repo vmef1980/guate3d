@@ -35,7 +35,7 @@
   }
   </script>
 
-  <link rel="icon" id="favicon" href="img/GUATE3DLABS .ico" type="image/x-icon">
+  <link rel="icon" id="favicon" href="/favicon.ico" type="image/x-icon">
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
@@ -436,6 +436,12 @@
       const esDepartamento = envio === 40;
       const contraentrega = document.querySelector('input[name="pago"][value="c"]').checked;
       const recargo = (esDepartamento && contraentrega) ? (subtotal + envio) * 0.05 : 0;
+      // v10: comisión de tarjeta (misma fórmula que se usa al cobrar con Recurrente). Antes no se calculaba
+      // y el total no se actualizaba.
+      const conTarjeta = !!document.querySelector('input[name="pago"][value="tarjeta"]')?.checked;
+      const comision = (conTarjeta && subtotal > 0) ? (subtotal + envio) * 0.045 + 2 : 0;
+      if ($('fila-comision')) $('fila-comision').style.display = comision ? "flex" : "none";
+      if ($('comision-monto')) $('comision-monto').textContent = `${CONFIG.simboloMoneda}${comision.toFixed(2)}`;
 
       $('sub').textContent = `${CONFIG.simboloMoneda}${subtotal.toFixed(2)}`;
       $('env').textContent = `${CONFIG.simboloMoneda}${envio.toFixed(2)}`;

@@ -1,0 +1,71 @@
+{
+  "_instrucciones": "Cada grupo es una lista de palabras que significan lo mismo. Si un producto contiene cualquiera de ellas (en nombre, subcategoría o descripción), el buscador lo encuentra con cualquier otra del grupo, y su página muestra las demás como 'También lo buscan como'. Escribe en minúsculas; los acentos no importan. Agrega grupos o palabras cuando quieras.",
+  "grupos": [
+    [
+      "llavero",
+      "llaveros",
+      "keychain"
+    ],
+    [
+      "impresión 3d",
+      "3d",
+      "impreso en 3d"
+    ],
+    [
+      "celular",
+      "teléfono",
+      "móvil"
+    ],
+    [
+      "base",
+      "soporte",
+      "stand",
+      "porta"
+    ],
+    [
+      "maceta",
+      "macetero"
+    ],
+    [
+      "lámpara",
+      "luz"
+    ],
+    [
+      "cuadro",
+      "marco",
+      "portarretrato"
+    ],
+    [
+      "placa",
+      "matrícula"
+    ],
+    [
+      "personalizado",
+      "con nombre"
+    ],
+    [
+      "audífonos",
+      "auriculares"
+    ],
+    [
+      "moto",
+      "motocicleta"
+    ],
+    [
+      "carro",
+      "auto",
+      "vehículo"
+    ],
+    [
+      "organizador",
+      "estante",
+      "estantería",
+      "repisa"
+    ],
+    [
+      "gym",
+      "gimnasio",
+      "pesas"
+    ]
+  ]
+}
