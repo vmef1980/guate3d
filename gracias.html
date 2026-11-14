@@ -61,6 +61,10 @@
 </div>
 
 <script>
+  // v10: el pago ya se confirmó (Recurrente solo envía aquí si el cobro fue exitoso):
+  // se vacía el carrito para que el cliente no vuelva a pagar los mismos productos.
+  try { localStorage.removeItem("carrito"); } catch (e) {}
+
   const WA_NUMBER = "50241084481";
   const NEGOCIO   = "Guate 3D Labs";
 
