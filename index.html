@@ -75,6 +75,7 @@
     }
   }
   </script>
+  <style>a.seo-cat-card{display:block;color:inherit;text-decoration:none}a.seo-cat-card:hover{transform:translateY(-2px)}.seo-todas{margin:6px auto 10px;max-width:900px;font-size:.8rem;line-height:1.9;text-align:center;opacity:.85}.seo-todas a{color:inherit;text-decoration:underline;text-underline-offset:2px}</style>
 </head>
 <body class="con-barra-confianza">
   <!-- v9 (velocidad): marca la vista antes de dibujar la página, así el banner y la barra azul
@@ -185,12 +186,12 @@
 
       <p class="seo-cats-title">Nuestras <span>Categorías de Productos</span></p>
       <div class="seo-cats-grid">
-        <div class="seo-cat-card"><span class="seo-cat-icon">🔑</span><div class="seo-cat-name">Llaveros</div><div class="seo-cat-desc">Llaveros de gym, placas de Guatemala, personalizados con nombre o logo de tu empresa</div></div>
-        <div class="seo-cat-card"><span class="seo-cat-icon">🪴</span><div class="seo-cat-name">Decoración</div><div class="seo-cat-desc">Lámparas, cuadros, macetas y adornos de pared impresos en 3D</div></div>
-        <div class="seo-cat-card"><span class="seo-cat-icon">🗄️</span><div class="seo-cat-name">Organización</div><div class="seo-cat-desc">Estanterías modulares, organizadores y accesorios para baño</div></div>
-        <div class="seo-cat-card"><span class="seo-cat-icon">🚗</span><div class="seo-cat-name">Vehículos y motos</div><div class="seo-cat-desc">Paneles, portavasos, topes de pedal y bases para cascos</div></div>
-        <div class="seo-cat-card"><span class="seo-cat-icon">🎧</span><div class="seo-cat-name">Tecnología y celular</div><div class="seo-cat-desc">Bases para celular, audífonos y router</div></div>
-        <div class="seo-cat-card"><span class="seo-cat-icon">🎁</span><div class="seo-cat-name">Especiales y personalizados</div><div class="seo-cat-desc">Diseños a pedido para regalos, eventos y empresas</div></div>
+        <a class="seo-cat-card" href="/c/llaveros/"><span class="seo-cat-icon">🔑</span><div class="seo-cat-name">Llaveros</div><div class="seo-cat-desc">Llaveros de gym, placas de Guatemala, personalizados con nombre o logo de tu empresa</div></a>
+        <a class="seo-cat-card" href="/c/decoracion/"><span class="seo-cat-icon">🪴</span><div class="seo-cat-name">Decoración</div><div class="seo-cat-desc">Lámparas, cuadros, macetas y adornos de pared impresos en 3D</div></a>
+        <a class="seo-cat-card" href="/c/organizacion/"><span class="seo-cat-icon">🗄️</span><div class="seo-cat-name">Organización</div><div class="seo-cat-desc">Estanterías modulares, organizadores y accesorios para baño</div></a>
+        <a class="seo-cat-card" href="/c/vehiculos/"><span class="seo-cat-icon">🚗</span><div class="seo-cat-name">Vehículos y motos</div><div class="seo-cat-desc">Paneles, portavasos, topes de pedal y bases para cascos</div></a>
+        <a class="seo-cat-card" href="/c/tecnologia/"><span class="seo-cat-icon">🎧</span><div class="seo-cat-name">Tecnología y celular</div><div class="seo-cat-desc">Bases para celular, audífonos y router</div></a>
+        <a class="seo-cat-card" href="/c/especiales/"><span class="seo-cat-icon">🎁</span><div class="seo-cat-name">Especiales y personalizados</div><div class="seo-cat-desc">Diseños a pedido para regalos, eventos y empresas</div></a>
       </div>
 
       <div class="seo-info-grid">
@@ -238,6 +239,8 @@
   <footer class="footer-principal">
     <div class="footer-content">
       <div class="footer-links" id="footer-social-links"></div>
+      <!-- v10.2: enlaces fijos a las páginas de categoría (c/): así Google llega a ellas y, desde ahí, a cada producto -->
+      <nav class="seo-todas" aria-label="Todas las categorías"><strong>Categorías:</strong> <a href="/c/llaveros/">Llaveros</a> · <a href="/c/decoracion/">Decoración</a> · <a href="/c/organizacion/">Organización</a> · <a href="/c/vehiculos/">Vehículos</a> · <a href="/c/motos/">Motos</a> · <a href="/c/bicicletas/">Bicicletas</a> · <a href="/c/tecnologia/">Tecnología</a> · <a href="/c/movil-celular/">Móvil / celular</a> · <a href="/c/sobremesa/">Sobremesa</a> · <a href="/c/rompecabezas/">Rompecabezas</a> · <a href="/c/rotulos/">Rótulos</a> · <a href="/c/especiales/">Especiales</a></nav>
       <div class="footer-info">
         <span id="f-copy"></span> | <span id="f-loc"></span> | <a href="politicas.html">Políticas de compra</a> | <a href="privacidad.html">Política de privacidad</a> | <span id="f-dev"></span>
       </div>
