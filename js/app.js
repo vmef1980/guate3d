@@ -14,8 +14,8 @@ const CONFIG = {
       seoImage: "https://guate3d.rompecabezas.online/img/og-guate3d.jpg",
       urlSitio: "https://guate3d.rompecabezas.online/",   // v9: base para la etiqueta canonical de cada categoría
       // v10: marcas y siglas que se escriben siempre igual en los nombres (el resto va en "tipo oración")
-      marcas: ["Honda", "Volkswagen", "Snoopy", "Lego", "Guatemala", "Colombia", "Bambu", "Honey", "Victor", "Alfaro", "Mamá"],
-      siglas: ["CRX", "FIFA", "TIGO", "GYM", "NFC", "HX", "HATX", "F1", "A/C"],
+      marcas: ["Honda", "Volkswagen", "Snoopy", "Lego", "Guatemala", "Colombia", "Bambu", "Honey", "Victor", "Alfaro", "Mamá", "WhatsApp", "Navidad"],   // v11: + WhatsApp, Navidad
+      siglas: ["CRX", "FIFA", "TIGO", "GYM", "NFC", "HX", "HATX", "F1", "A/C", "QR", "USB", "SD", "AA", "AAA", "PLA", "LED"],   // v11: + QR, USB, SD, AA, AAA, PLA, LED
       // v9: ícono del menú lateral según palabras del nombre de la categoría (gana la primera que coincida).
       // Íconos disponibles: https://icons.getbootstrap.com  — si ninguna coincide se usa "iconoCategoriaDefault".
       iconosCategorias: [
@@ -30,7 +30,13 @@ const CONFIG = {
         { palabras: ["SOBREMESA"], icono: "bi-cup-hot" },
         { palabras: ["ESPECIALES"], icono: "bi-stars" },
         { palabras: ["ROMPECABEZAS"], icono: "bi-puzzle" },
-        { palabras: ["ROTULOS"], icono: "bi-signpost-2" }
+        { palabras: ["ROTULOS"], icono: "bi-signpost-2" },
+        // v11: categorías nuevas
+        { palabras: ["NAVIDAD"], icono: "bi-gift" },
+        { palabras: ["NEGOCIOS"], icono: "bi-shop" },
+        { palabras: ["HOGAR"], icono: "bi-house-door" },
+        { palabras: ["MASCOTAS"], icono: "bi-heart" },
+        { palabras: ["JUGUETES"], icono: "bi-dice-5" }
       ],
       iconoCategoriaDefault: "bi-printer",
       // v9: productos frágiles. En este Sheet la columna L es "precio_tienda", por eso "columnaFragil" es null

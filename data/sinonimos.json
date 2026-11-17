@@ -66,6 +66,84 @@
       "gym",
       "gimnasio",
       "pesas"
+    ],
+    [
+      "navidad",
+      "navideño",
+      "navideña",
+      "christmas"
+    ],
+    [
+      "esfera",
+      "bola",
+      "bombilla"
+    ],
+    [
+      "nacimiento",
+      "pesebre",
+      "belén"
+    ],
+    [
+      "rótulo",
+      "letrero",
+      "cartel",
+      "aviso"
+    ],
+    [
+      "mascota",
+      "perro",
+      "gato",
+      "chucho"
+    ],
+    [
+      "concentrado",
+      "croquetas",
+      "comida para perro"
+    ],
+    [
+      "batería",
+      "baterías",
+      "pila",
+      "pilas"
+    ],
+    [
+      "control",
+      "mando",
+      "joystick"
+    ],
+    [
+      "articulado",
+      "flexible",
+      "flexi"
+    ],
+    [
+      "antiestrés",
+      "fidget"
+    ],
+    [
+      "posavasos",
+      "portavasos"
+    ],
+    [
+      "basurero",
+      "bote de basura"
+    ],
+    [
+      "carretilla",
+      "carrito"
+    ],
+    [
+      "memoria",
+      "usb",
+      "sd"
+    ],
+    [
+      "tarjetero",
+      "porta tarjetas"
+    ],
+    [
+      "litofanía",
+      "foto en relieve"
     ]
   ]
 }
