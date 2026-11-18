@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guate 3D Labs — Calculadora de Costos</title>
+<style>
+:root {
+  --azul: #2563eb; --azul-hover: #1d4ed8; --azul-claro: #eff6ff; --azul-borde: #bfdbfe;
+  --verde: #16a34a; --verde-claro: #f0fdf4; --verde-borde: #bbf7d0;
+  --naranja: #ea580c; --naranja-claro: #fff7ed; --naranja-borde: #fed7aa;
+  --rojo: #dc2626; --rojo-claro: #fef2f2;
+  --gris-100: #f3f4f6; --gris-200: #e5e7eb; --gris-400: #9ca3af; --gris-700: #374151; --gris-900: #111827;
+  --blanco: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+  --r: 12px; --r-sm: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gris-100); color: var(--gris-900); font-size: 14px; line-height: 1.5; }
+
+/* ── TOPBAR ── */
+.topbar { background: var(--azul); padding: 0 24px; display: flex; align-items: center; gap: 0; height: 56px; }
+.topbar-logo { font-size: 1.4rem; margin-right: 10px; }
+.topbar-title { color: white; font-weight: 700; font-size: 1.1rem; }
+.topbar-sub { color: rgba(255,255,255,.65); font-size: 0.8rem; margin-left: 8px; }
+
+/* ── TABS ── */
+.tabs-nav { background: white; border-bottom: 2px solid var(--gris-200); display: flex; padding: 0 20px; gap: 4px; overflow-x: auto; }
+.tab-btn { padding: 14px 20px; border: none; background: none; font-size: 0.88rem; font-weight: 600; color: var(--gris-400); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all .2s; display: flex; align-items: center; gap: 7px; }
+.tab-btn:hover { color: var(--azul); }
+.tab-btn.active { color: var(--azul); border-bottom-color: var(--azul); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── LAYOUT ── */
+.page { max-width: 1080px; margin: 0 auto; padding: 24px 16px; }
+.two-col { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+@media(max-width:780px){ .two-col { grid-template-columns: 1fr; } }
+
+/* ── CARDS ── */
+.card { background: var(--blanco); border-radius: var(--r); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; }
+.card-header { padding: 14px 18px; border-bottom: 1px solid var(--gris-200); display: flex; align-items: center; gap: 8px; }
+.card-header h2 { font-size: 0.92rem; font-weight: 700; color: var(--gris-900); }
+.card-header .ico { font-size: 1.1rem; }
+.card-body { padding: 18px; }
+.card-footer { padding: 12px 18px; background: var(--gris-100); border-top: 1px solid var(--gris-200); }
+
+/* ── FORM ── */
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--gris-400); margin-bottom: 4px; }
+.field input, .field select, .field textarea { width: 100%; border: 1.5px solid var(--gris-200); border-radius: var(--r-sm); padding: 8px 11px; font-size: 0.9rem; color: var(--gris-900); background: var(--blanco); transition: border-color .15s, box-shadow .15s; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+.field .hint { font-size: 0.72rem; color: var(--gris-400); margin-top: 3px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* Colores de celda */
+.f-azul input, .f-azul select { background: #eff6ff; }
+.f-amarillo input { background: #fefce8; }
+
+/* ── SECTION LABEL ── */
+.section-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--gris-400); padding: 10px 18px 6px; border-top: 1px solid var(--gris-200); margin-top: 4px; }
+.section-label:first-child { border-top: none; margin-top: 0; }
+
+/* ── TOGGLE ── */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.toggle-wrap label.lbl { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--gris-400); }
+.switch { position: relative; width: 42px; height: 23px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider { position: absolute; inset: 0; background: var(--gris-200); border-radius: 23px; cursor: pointer; transition: .25s; }
+.switch-slider::before { content: ''; position: absolute; width: 17px; height: 17px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .25s; }
+.switch input:checked + .switch-slider { background: var(--azul); }
+.switch input:checked + .switch-slider::before { transform: translateX(19px); }
+
+/* ── RESULTADO ── */
+.res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.res-box { border-radius: var(--r-sm); padding: 14px; text-align: center; background: var(--gris-100); }
+.res-box .lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--gris-400); margin-bottom: 4px; }
+.res-box .val { font-size: 1.6rem; font-weight: 800; color: var(--gris-900); }
+.res-box.hl { background: var(--azul); }
+.res-box.hl .lbl { color: rgba(255,255,255,.7); }
+.res-box.hl .val { color: white; }
+.res-box.ok { background: var(--verde-claro); }
+.res-box.ok .val { color: var(--verde); }
+
+/* DESGLOSE */
+.desglose { font-size: 0.83rem; }
+.desglose table { width: 100%; border-collapse: collapse; }
+.desglose tr { border-bottom: 1px solid var(--gris-200); }
+.desglose tr:last-child { border-bottom: 2px solid var(--gris-700); font-weight: 700; }
+.desglose td { padding: 7px 4px; }
+.desglose td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.desglose .sub { color: var(--gris-400); font-size: 0.75rem; }
+
+/* ── BOTONES ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 16px; border-radius: var(--r-sm); border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+.btn-primary { background: var(--azul); color: white; }
+.btn-primary:hover { background: var(--azul-hover); }
+.btn-success { background: var(--verde); color: white; }
+.btn-success:hover { background: #15803d; }
+.btn-ghost { background: var(--gris-100); color: var(--gris-700); border: 1.5px solid var(--gris-200); }
+.btn-ghost:hover { background: var(--gris-200); }
+.btn-block { width: 100%; margin-bottom: 8px; }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+.badge-verde { background: var(--verde-claro); color: var(--verde); border: 1px solid var(--verde-borde); }
+.badge-azul { background: var(--azul-claro); color: var(--azul); border: 1px solid var(--azul-borde); }
+.badge-naranja { background: var(--naranja-claro); color: var(--naranja); border: 1px solid var(--naranja-borde); }
+.badge-rojo { background: var(--rojo-claro); color: var(--rojo); }
+
+/* ── COTIZADOR ── */
+.url-row { display: flex; gap: 8px; }
+.url-row input { flex: 1; }
+.preview-box { border: 1.5px solid var(--gris-200); border-radius: var(--r-sm); padding: 14px; margin-top: 12px; display: none; }
+.preview-box.show { display: block; }
+.preview-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+.preview-meta { font-size: 0.78rem; color: var(--gris-400); margin-bottom: 10px; }
+.preview-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+
+/* ── HISTORIAL ── */
+.hist-list { max-height: 240px; overflow-y: auto; }
+.hist-item { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--gris-200); }
+.hist-item:last-child { border-bottom: none; }
+.hist-name { flex: 1; font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-price { font-weight: 800; color: var(--azul); font-size: 0.9rem; white-space: nowrap; }
+
+/* ── COSTO EQUIPO ── */
+.equipo-items { display: flex; flex-direction: column; gap: 8px; }
+.equipo-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--gris-200); border-radius: var(--r-sm); background: var(--gris-100); }
+.equipo-item .eco-name { flex: 1; font-size: 0.85rem; font-weight: 600; }
+.equipo-item .eco-amt { font-size: 0.85rem; font-weight: 700; color: var(--azul); white-space: nowrap; }
+.equipo-item .eco-tag { font-size: 0.72rem; color: var(--gris-400); }
+.equipo-total { display: flex; justify-content: space-between; padding: 10px 12px; background: var(--azul); border-radius: var(--r-sm); color: white; font-weight: 700; font-size: 0.9rem; margin-top: 4px; }
+
+/* ── LEYENDA COLORES ── */
+.leyenda { display: flex; gap: 14px; flex-wrap: wrap; padding: 10px 18px; background: var(--gris-100); border-top: 1px solid var(--gris-200); font-size: 0.75rem; color: var(--gris-400); }
+.leyenda span { display: flex; align-items: center; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* ── STEPS ── */
+.steps { display: flex; gap: 0; margin-bottom: 18px; overflow: hidden; border-radius: var(--r-sm); border: 1.5px solid var(--gris-200); }
+.step-item { flex: 1; padding: 10px 8px; text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--gris-400); background: var(--gris-100); cursor: pointer; border-right: 1.5px solid var(--gris-200); transition: all .2s; }
+.step-item:last-child { border-right: none; }
+.step-item.done { background: var(--verde-claro); color: var(--verde); }
+.step-item.active { background: var(--azul); color: white; }
+.step-num { display: block; font-size: 1rem; margin-bottom: 1px; }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 12px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 9999; max-width: 320px; }
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.ok { background: var(--verde); }
+#toast.err { background: var(--rojo); }
+
+/* ── ACCORDION ── */
+details { border: 1.5px solid var(--gris-200); border-radius: var(--r-sm); overflow: hidden; }
+details summary { padding: 11px 14px; font-size: 0.83rem; font-weight: 600; cursor: pointer; color: var(--azul); background: var(--azul-claro); list-style: none; display: flex; align-items: center; gap: 7px; }
+details summary::-webkit-details-marker { display: none; }
+details[open] summary { border-bottom: 1px solid var(--azul-borde); }
+details .acc-body { padding: 14px; font-size: 0.82rem; line-height: 1.65; }
+pre.code { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: var(--r-sm); font-size: 0.75rem; overflow-x: auto; margin: 8px 0; }
+
+/* ── ALERT ── */
+.alert { border-radius: var(--r-sm); padding: 10px 14px; font-size: 0.82rem; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; }
+.alert-azul { background: var(--azul-claro); border: 1px solid var(--azul-borde); color: var(--azul); }
+.alert-naranja { background: var(--naranja-claro); border: 1px solid var(--naranja-borde); color: var(--naranja); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">🖨️</div>
+  <span class="topbar-title">Guate 3D Labs</span>
+  <span class="topbar-sub">— Calculadora de Costos</span>
+</div>
+
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="showTab('cotizar')" id="tbtn-cotizar">🔗 Cotizar por Link</button>
+  <button class="tab-btn" onclick="showTab('calcular')" id="tbtn-calcular">🧮 Calcular Producto</button>
+  <button class="tab-btn" onclick="showTab('equipo')" id="tbtn-equipo">🖨️ Mi Equipo</button>
+  <button class="tab-btn" onclick="showTab('params')" id="tbtn-params">⚙️ Parámetros</button>
+  <button class="tab-btn" onclick="showTab('historial')" id="tbtn-historial">📋 Historial</button>
+  <button class="tab-btn" onclick="showTab('sheets')" id="tbtn-sheets">📊 Google Sheets</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — COTIZAR POR LINK
+══════════════════════════════════════════ -->
+<div class="tab-panel active" id="tab-cotizar">
+<div class="page">
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-header"><span class="ico">🔗</span><h2>Pega el link del diseño</h2></div>
+        <div class="card-body">
+          <div class="alert alert-azul">💡 Pega un link de MakerWorld, Thingiverse, Printables o Cults3D y completa los datos del slicer para obtener el precio sugerido.</div>
+          <div class="field">
+            <label>URL del diseño STL</label>
+            <div class="url-row">
+              <input type="url" id="cot_url" placeholder="https://makerworld.com/en/models/..." oninput="detectarSitio()">
+              <button class="btn btn-primary" onclick="analizarLink()">Analizar →</button>
+            </div>
+            <div class="hint" id="cot_sitio_hint"></div>
+          </div>
+
+          <div class="preview-box" id="preview-box">
+            <div class="preview-title" id="prev_titulo">—</div>
+            <div class="preview-meta" id="prev_meta">—</div>
+            <div class="preview-chips" id="prev_chips"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="ico">📐</span><h2>Datos del Slicer</h2></div>
+        <div class="card-body">
+          <div class="alert alert-naranja">⚠️ Estos datos los obtienes al laminar el diseño en Bambu Studio / Orca Slicer.</div>
+          <div class="field-row">
+            <div class="field f-amarillo">
+              <label>Gramos (g)</label>
+              <input type="number" id="cot_g" value="80" step="1" oninput="calcCot()">
+              <div class="hint">peso del filamento</div>
+            </div>
+            <div class="field f-amarillo">
+              <label>Tiempo (horas)</label>
+              <input type="number" id="cot_h" value="4" step="0.5" oninput="calcCot()">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field f-amarillo">
+              <label>Trabajo (min)</label>
+              <input type="number" id="cot_min" value="10" step="5" oninput="calcCot()">
+              <div class="hint">retirar, limpiar, empacar</div>
+            </div>
+            <div class="field f-amarillo">
+              <label>Otros materiales (Q)</label>
+              <input type="number" id="cot_otros" value="0" step="1" oninput="calcCot()">
+              <div class="hint">imán, tornillo, led…</div>
+            </div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="lbl">Multicolor (Canvas)</label>
+            <label class="switch">
+              <input type="checkbox" id="cot_mc" onchange="calcCot()">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="ico">🏷️</span><h2>Datos del Producto</h2></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Nombre del producto</label>
+            <input type="text" id="cot_nombre" placeholder="ej. Mano del Grinch Decoración Navideña">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Categoría</label>
+              <select id="cot_cat">
+                <option>NAVIDAD</option><option>NEGOCIOS</option><option>HOGAR</option>
+                <option>MASCOTAS</option><option>JUGUETES</option><option>DECORACION</option>
+                <option>LLAVEROS</option><option>TECNOLOGIA</option><option>ORGANIZADORES</option><option>VEHICULOS</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Estado</label>
+              <select id="cot_estado">
+                <option>DISPONIBLE</option><option>PREVENTA</option><option>AGOTADO</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Precio a cobrar (Q) — opcional</label>
+            <input type="number" id="cot_precio_manual" placeholder="vacío = usar precio sugerido" step="5" oninput="calcCot()">
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="guardarCot()">💾 Guardar en historial</button>
+            <button class="btn btn-success" onclick="enviarCotSheets()">📤 Enviar al Sheet</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADO COTIZADOR -->
+    <div>
+      <div class="card">
+        <div class="card-header"><span class="ico">💰</span><h2>Resultado</h2></div>
+        <div class="card-body">
+          <div class="res-grid">
+            <div class="res-box"><div class="lbl">Costo total</div><div class="val" id="cot_res_costo">Q 0</div></div>
+            <div class="res-box ok"><div class="lbl">Precio sugerido</div><div class="val" id="cot_res_sug">Q 0</div></div>
+            <div class="res-box hl"><div class="lbl">Precio catálogo</div><div class="val" id="cot_res_cat">Q 0</div></div>
+            <div class="res-box"><div class="lbl">Margen real</div><div class="val" id="cot_res_mar">0%</div></div>
+          </div>
+          <div class="desglose">
+            <table>
+              <tr><td>🧵 Filamento</td><td id="cd_fil">—</td></tr>
+              <tr><td>⚡ Energía</td><td id="cd_ene">—</td></tr>
+              <tr><td>📉 Depreciación</td><td id="cd_dep">—</td></tr>
+              <tr><td>🔧 Mantenimiento</td><td id="cd_mant">—</td></tr>
+              <tr><td>👷 Mano de obra</td><td id="cd_labor">—</td></tr>
+              <tr><td>📦 Empaque y otros</td><td id="cd_emp">—</td></tr>
+              <tr><td>❌ Fallos</td><td id="cd_fallos">—</td></tr>
+              <tr><td><strong>COSTO TOTAL</strong></td><td id="cd_total">—</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="leyenda">
+          <span><span class="dot" style="background:#eff6ff;border:1px solid #bfdbfe"></span> Dato tuyo</span>
+          <span><span class="dot" style="background:#fefce8;border:1px solid #fde68a"></span> Del slicer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — CALCULAR PRODUCTO MANUAL
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-calcular">
+<div class="page">
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-header"><span class="ico">📐</span><h2>Datos del Slicer</h2></div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field f-amarillo">
+              <label>Gramos (g)</label>
+              <input type="number" id="g" value="80" step="1" oninput="calcular()">
+            </div>
+            <div class="field f-amarillo">
+              <label>Tiempo (horas)</label>
+              <input type="number" id="h" value="4" step="0.5" oninput="calcular()">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field f-amarillo">
+              <label>Trabajo manual (min)</label>
+              <input type="number" id="min_trabajo" value="10" step="5" oninput="calcular()">
+            </div>
+            <div class="field f-amarillo">
+              <label>Otros materiales (Q)</label>
+              <input type="number" id="otros" value="0" step="1" oninput="calcular()">
+            </div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="lbl">Multicolor (Canvas)</label>
+            <label class="switch">
+              <input type="checkbox" id="mc" onchange="calcular()">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="ico">🏷️</span><h2>Datos del Producto</h2></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Nombre</label>
+            <input type="text" id="nombre" placeholder="ej. Dragón Articulado">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Categoría</label>
+              <select id="cat">
+                <option>NAVIDAD</option><option>NEGOCIOS</option><option>HOGAR</option>
+                <option>MASCOTAS</option><option>JUGUETES</option><option>DECORACION</option>
+                <option>LLAVEROS</option><option>TECNOLOGIA</option><option>ORGANIZADORES</option><option>VEHICULOS</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Estado</label>
+              <select id="estado"><option>DISPONIBLE</option><option>PREVENTA</option><option>AGOTADO</option></select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Precio a cobrar (Q) — opcional</label>
+            <input type="number" id="precio_manual" placeholder="vacío = sugerido" step="5" oninput="calcular()">
+          </div>
+          <div class="field">
+            <label>Referencia (URL diseño)</label>
+            <input type="url" id="ref" placeholder="https://...">
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="guardar()">💾 Guardar</button>
+            <button class="btn btn-success" onclick="enviarSheets()">📤 Al Sheet</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-header"><span class="ico">💰</span><h2>Resultado</h2></div>
+        <div class="card-body">
+          <div class="res-grid">
+            <div class="res-box"><div class="lbl">Costo total</div><div class="val" id="res_costo">Q 0</div></div>
+            <div class="res-box ok"><div class="lbl">Precio sugerido</div><div class="val" id="res_sug">Q 0</div></div>
+            <div class="res-box hl"><div class="lbl">Precio catálogo</div><div class="val" id="res_cat">Q 0</div></div>
+            <div class="res-box"><div class="lbl">Margen real</div><div class="val" id="res_mar">0%</div></div>
+          </div>
+          <div class="desglose">
+            <table>
+              <tr><td>🧵 Filamento</td><td id="d_fil">—</td></tr>
+              <tr><td>⚡ Energía</td><td id="d_ene">—</td></tr>
+              <tr><td>📉 Depreciación</td><td id="d_dep">—</td></tr>
+              <tr><td>🔧 Mantenimiento</td><td id="d_mant">—</td></tr>
+              <tr><td>👷 Mano de obra</td><td id="d_labor">—</td></tr>
+              <tr><td>📦 Empaque y otros</td><td id="d_emp">—</td></tr>
+              <tr><td>❌ Fallos</td><td id="d_fallos">—</td></tr>
+              <tr><td><strong>COSTO TOTAL</strong></td><td id="d_total">—</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — MI EQUIPO
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-equipo">
+<div class="page" style="max-width:680px">
+  <div class="card">
+    <div class="card-header"><span class="ico">🖨️</span><h2>Costo total de mi equipo</h2></div>
+    <div class="card-body">
+      <div class="alert alert-azul">💡 El costo total se usa para calcular la depreciación por hora. Incluye todo lo que pagaste para tener la impresora funcionando.</div>
+
+      <div class="equipo-items" id="equipo-items">
+        <!-- se genera dinámicamente -->
+      </div>
+      <div class="equipo-total" id="equipo-total">
+        <span>TOTAL PUESTO EN GUATEMALA</span>
+        <span id="equipo-total-val">Q 0.00</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button class="btn btn-ghost btn-sm" onclick="agregarItem()">+ Agregar ítem</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="ico">📉</span><h2>Depreciación calculada</h2></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field f-amarillo">
+          <label>Vida útil (horas de impresión)</label>
+          <input type="number" id="vida_eq" value="4000" step="100" oninput="calcEquipo()">
+          <div class="hint">≈2 años a 5.5 h/día</div>
+        </div>
+        <div class="field f-amarillo">
+          <label>Valor de rescate (Q)</label>
+          <input type="number" id="rescate" value="0" step="100" oninput="calcEquipo()">
+          <div class="hint">precio de reventa al final</div>
+        </div>
+      </div>
+      <div class="res-grid" style="margin-bottom:0">
+        <div class="res-box hl"><div class="lbl">Depreciación/hora</div><div class="val" id="depr_hora">Q 0.00</div></div>
+        <div class="res-box"><div class="lbl">Costo total equipo</div><div class="val" id="depr_total_eq">Q 0</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 4 — PARÁMETROS
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-params">
+<div class="page" style="max-width:720px">
+
+  <div class="card">
+    <div class="card-header"><span class="ico">🧵</span><h2>Filamento</h2></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field f-azul">
+          <label>PLA+ 1 kg (Q)</label>
+          <input type="number" id="p_pla" value="169" step="1" oninput="onParamChange()">
+          <div class="hint">La Electrónica / Creativo3D</div>
+        </div>
+        <div class="field f-amarillo">
+          <label>Merma normal (%)</label>
+          <input type="number" id="p_merma" value="10" step="1" oninput="onParamChange()">
+          <div class="hint">soportes + purga</div>
+        </div>
+      </div>
+      <div class="field f-amarillo">
+        <label>Merma extra multicolor (%)</label>
+        <input type="number" id="p_merma_mc" value="30" step="5" oninput="onParamChange()">
+        <div class="hint">purga por cada cambio de color (Canvas)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="ico">⚡</span><h2>Energía — EEGSA Guatemala</h2></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field f-azul">
+          <label>Tarifa (Q/kWh)</label>
+          <input type="number" id="p_tarifa" value="1.51" step="0.01" oninput="onParamChange()">
+          <div class="hint">EEGSA no social, nov 2026 (CNEE). Social: Q1.42. Deocsa/Deorsa: ~Q2.</div>
+        </div>
+        <div class="field f-amarillo">
+          <label>Consumo promedio (kW)</label>
+          <input type="number" id="p_kw" value="0.15" step="0.01" oninput="onParamChange()">
+          <div class="hint">mídelo con medidor de enchufe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="ico">🔧</span><h2>Mantenimiento</h2></div>
+    <div class="card-body">
+      <div class="field f-amarillo">
+        <label>Mantenimiento y repuestos (Q/hora)</label>
+        <input type="number" id="p_mant" value="0.60" step="0.1" oninput="onParamChange()">
+        <div class="hint">boquillas, placa PEI, lubricante, filtros</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="ico">👷</span><h2>Trabajo y Precio</h2></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field f-azul">
+          <label>Tu hora de trabajo (Q)</label>
+          <input type="number" id="p_hora" value="25" step="5" oninput="onParamChange()">
+        </div>
+        <div class="field f-azul">
+          <label>Empaque base (Q)</label>
+          <input type="number" id="p_empaque" value="2" step="0.5" oninput="onParamChange()">
+          <div class="hint">bolsa, etiqueta, tarjeta</div>
+        </div>
+      </div>
+      <div class="field-row3">
+        <div class="field f-amarillo">
+          <label>Fallos (%)</label>
+          <input type="number" id="p_fallos" value="5" step="1" oninput="onParamChange()">
+          <div class="hint">1 de cada 20 piezas</div>
+        </div>
+        <div class="field f-azul">
+          <label>Margen utilidad (%)</label>
+          <input type="number" id="p_margen" value="50" step="5" oninput="onParamChange()">
+        </div>
+        <div class="field f-azul">
+          <label>Impuesto (%)</label>
+          <input type="number" id="p_imp" value="5" step="1" oninput="onParamChange()">
+          <div class="hint">5% pequeño contribuyente</div>
+        </div>
+      </div>
+      <div class="field f-azul">
+        <label>Redondear precio a múltiplos de (Q)</label>
+        <input type="number" id="p_redondeo" value="5" step="5" oninput="onParamChange()">
+      </div>
+    </div>
+    <div class="leyenda">
+      <span><span class="dot" style="background:#eff6ff;border:1px solid #bfdbfe"></span> Tu dato (azul)</span>
+      <span><span class="dot" style="background:#fefce8;border:1px solid #fde68a"></span> Estimado (amarillo) — cámbialo por tu dato real</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 — HISTORIAL
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-historial">
+<div class="page">
+  <div class="card">
+    <div class="card-header"><span class="ico">📋</span><h2>Historial de esta sesión</h2></div>
+    <div class="card-body">
+      <div class="hist-list" id="hist-list">
+        <div style="color:var(--gris-400);font-size:0.85rem;padding:12px 0;text-align:center">Aún no hay productos guardados.</div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="limpiarHist()">🗑️ Limpiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 6 — GOOGLE SHEETS
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-sheets">
+<div class="page" style="max-width:680px">
+  <div class="card">
+    <div class="card-header"><span class="ico">📊</span><h2>Configurar Google Sheets</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label>URL de tu Web App (Google Apps Script)</label>
+        <input type="text" id="sheets_url" placeholder="https://script.google.com/macros/s/.../exec" oninput="guardarConfig()">
+      </div>
+      <div class="field">
+        <label>ID de tu Google Sheet</label>
+        <input type="text" id="sheets_id" placeholder="1Tkz... (de la URL del Sheet)" oninput="guardarConfig()">
+        <div class="hint">de https://docs.google.com/spreadsheets/d/<strong>ID</strong>/edit</div>
+      </div>
+      <button class="btn btn-success btn-sm" onclick="probarConexion()">🔌 Probar conexión</button>
+    </div>
+  </div>
+
+  <details>
+    <summary>📋 Cómo configurar el Apps Script paso a paso</summary>
+    <div class="acc-body">
+      <strong>1.</strong> Abre tu Google Sheet → <em>Extensiones</em> → <em>Apps Script</em><br>
+      <strong>2.</strong> Borra el contenido y pega este código:<br>
+      <pre class="code">function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.openById(data.sheetId);
+  var sheet = ss.getSheetByName("Productos") || ss.getSheets()[0];
+  sheet.appendRow([
+    data.id, data.titulo, "", "",
+    data.categoria_id, data.categoria_nombre,
+    data.subcategoria_id, data.subcategoria_nombre,
+    data.producto_descripcion, data.precio,
+    data.estado, "", data.referencia
+  ]);
+  return ContentService
+    .createTextOutput(JSON.stringify({ok:true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({status:"ok"}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+      <strong>3.</strong> Click en <em>Implementar</em> → <em>Nueva implementación</em><br>
+      &emsp;• Tipo: <strong>Aplicación web</strong><br>
+      &emsp;• Ejecutar como: <strong>Yo</strong><br>
+      &emsp;• Acceso: <strong>Cualquier usuario</strong><br>
+      <strong>4.</strong> Copia la URL de la web app y pégala arriba.<br>
+      <strong>5.</strong> Copia el ID de tu Sheet (de la URL) y pégalo también.
+    </div>
+  </details>
+</div>
+</div>
+
+<div id="toast">Listo</div>
+
+<script>
+// ════════════════════════════════
+// ESTADO GLOBAL
+// ════════════════════════════════
+let historial = JSON.parse(localStorage.getItem('g3dl_hist') || '[]');
+let cfg = JSON.parse(localStorage.getItem('g3dl_cfg') || '{}');
+
+// Equipo (costos reales)
+let equipoItems = JSON.parse(localStorage.getItem('g3dl_equipo') || 'null') || [
+  { nombre: 'Elegoo Centauri Carbon (Creativo3D)', monto: 5099, moneda: 'Q', tag: 'impresora' },
+  { nombre: 'Canvas multicolor kit', monto: 55, moneda: 'USD', tag: 'accesorio' },
+  { nombre: 'Repuestos hotends 0.2/0.4/0.6/0.8 + patas (AliExpress)', monto: 33.91, moneda: 'USD', tag: 'repuesto' },
+  { nombre: 'Hotend adicional (Elegoo directo)', monto: 9.00, moneda: 'USD', tag: 'repuesto' },
+  { nombre: 'Alicates electrónicos (AliExpress)', monto: 3.89, moneda: 'USD', tag: 'herramienta' },
+  { nombre: 'Importación / aduanas Guatemala', monto: 300.79, moneda: 'Q', tag: 'impuesto' },
+];
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+window.onload = () => {
+  if (cfg.sheets_url) document.getElementById('sheets_url').value = cfg.sheets_url;
+  if (cfg.sheets_id)  document.getElementById('sheets_id').value  = cfg.sheets_id;
+  renderEquipo();
+  renderHist();
+  calcular();
+  calcCot();
+};
+
+// ════════════════════════════════
+// TABS
+// ════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('tbtn-' + id).classList.add('active');
+}
+
+// ════════════════════════════════
+// HELPERS
+// ════════════════════════════════
+const gv  = id => parseFloat(document.getElementById(id)?.value) || 0;
+const gsv = id => document.getElementById(id)?.value.trim() || '';
+const fmt = v => `Q ${v.toFixed(2)}`;
+
+function getParams() {
+  // Depreciación viene del equipo
+  const totalEquipo = calcTotalEquipo();
+  const vida    = gv('vida_eq') || 4000;
+  const rescate = gv('rescate') || 0;
+  const depr_h  = (totalEquipo - rescate) / vida;
+  return {
+    pla_kg:     gv('p_pla') || 169,
+    merma:      (gv('p_merma') || 10) / 100,
+    merma_mc:   (gv('p_merma_mc') || 30) / 100,
+    tarifa:     gv('p_tarifa') || 1.51,
+    kw:         gv('p_kw') || 0.15,
+    depr_h,
+    mant:       gv('p_mant') || 0.60,
+    hora_labor: gv('p_hora') || 25,
+    empaque:    gv('p_empaque') || 2,
+    fallos_pct: (gv('p_fallos') || 5) / 100,
+    margen_pct: (gv('p_margen') || 50) / 100,
+    imp_pct:    (gv('p_imp') || 5) / 100,
+    redondeo:   gv('p_redondeo') || 5,
+  };
+}
+
+function calcCostos(grams, horas, minutos, otros, mc, p) {
+  const merma = mc ? (p.merma + p.merma_mc) : p.merma;
+  const c_fil    = grams * (1 + merma) * (p.pla_kg / 1000);
+  const c_ene    = horas * p.kw * p.tarifa;
+  const c_dep    = horas * p.depr_h;
+  const c_mant   = horas * p.mant;
+  const c_labor  = (minutos / 60) * p.hora_labor;
+  const c_emp    = p.empaque + otros;
+  const subtotal = c_fil + c_ene + c_dep + c_mant + c_labor + c_emp;
+  const c_fallos = subtotal * p.fallos_pct;
+  const costo    = subtotal + c_fallos;
+  const precio_min = costo / (1 - p.margen_pct - p.imp_pct);
+  const precio_sug = Math.ceil(precio_min / p.redondeo) * p.redondeo;
+  return { c_fil, c_ene, c_dep, c_mant, c_labor, c_emp, c_fallos, costo, precio_sug };
+}
+
+function renderResultado(ids, r, precio_manual) {
+  const precio_cat = precio_manual ? precio_manual : r.precio_sug;
+  const margen = precio_cat > 0 ? (precio_cat - r.costo) / precio_cat : 0;
+  document.getElementById(ids.costo).textContent   = fmt(r.costo);
+  document.getElementById(ids.sug).textContent     = fmt(r.precio_sug);
+  document.getElementById(ids.cat).textContent     = fmt(precio_cat);
+  const mel = document.getElementById(ids.mar);
+  mel.textContent = `${(margen*100).toFixed(1)}%`;
+  mel.style.color = margen >= 0.4 ? 'var(--verde)' : margen >= 0.2 ? 'var(--naranja)' : 'var(--rojo)';
+  document.getElementById(ids.fil).textContent    = fmt(r.c_fil);
+  document.getElementById(ids.ene).textContent    = fmt(r.c_ene);
+  document.getElementById(ids.dep).textContent    = fmt(r.c_dep);
+  document.getElementById(ids.mant).textContent   = fmt(r.c_mant);
+  document.getElementById(ids.labor).textContent  = fmt(r.c_labor);
+  document.getElementById(ids.emp).textContent    = fmt(r.c_emp);
+  document.getElementById(ids.fallos).textContent = fmt(r.c_fallos);
+  document.getElementById(ids.total).textContent  = fmt(r.costo);
+  return { precio_cat, margen };
+}
+
+// ════════════════════════════════
+// CALCULADORA MANUAL (TAB 2)
+// ════════════════════════════════
+let _ultimo = null;
+function calcular() {
+  const p = getParams();
+  const r = calcCostos(gv('g'), gv('h'), gv('min_trabajo'), gv('otros'), document.getElementById('mc')?.checked, p);
+  const pm = document.getElementById('precio_manual')?.value ? gv('precio_manual') : 0;
+  const { precio_cat, margen } = renderResultado({
+    costo:'res_costo', sug:'res_sug', cat:'res_cat', mar:'res_mar',
+    fil:'d_fil', ene:'d_ene', dep:'d_dep', mant:'d_mant', labor:'d_labor', emp:'d_emp', fallos:'d_fallos', total:'d_total'
+  }, r, pm);
+  _ultimo = { ...r, precio_cat, margen };
+}
+
+function guardar() {
+  if (!_ultimo) return;
+  const item = { ts: Date.now(), nombre: gsv('nombre') || 'Sin nombre', ...buildMeta('cat','estado','ref'), ..._ultimo };
+  historial.unshift(item);
+  localStorage.setItem('g3dl_hist', JSON.stringify(historial));
+  renderHist();
+  toast('💾 Guardado', 'ok');
+}
+
+function enviarSheets() {
+  if (!_ultimo) return;
+  const item = { nombre: gsv('nombre') || 'Sin nombre', ...buildMeta('cat','estado','ref'), ..._ultimo };
+  enviarPayload(buildPayload(item));
+}
+
+// ════════════════════════════════
+// COTIZADOR POR LINK (TAB 1)
+// ════════════════════════════════
+let _cotUltimo = null;
+
+function detectarSitio() {
+  const url = gsv('cot_url');
+  const hint = document.getElementById('cot_sitio_hint');
+  if (!url) { hint.textContent = ''; return; }
+  if (url.includes('makerworld.com'))   hint.textContent = '🌐 MakerWorld detectado';
+  else if (url.includes('thingiverse')) hint.textContent = '🌐 Thingiverse detectado';
+  else if (url.includes('printables'))  hint.textContent = '🌐 Printables detectado';
+  else if (url.includes('cults3d'))     hint.textContent = '🌐 Cults3D detectado';
+  else if (url.includes('thangs.com'))  hint.textContent = '🌐 Thangs detectado';
+  else hint.textContent = '🌐 Sitio externo';
+}
+
+async function analizarLink() {
+  const url = gsv('cot_url');
+  if (!url) { toast('Pega un link primero', 'err'); return; }
+
+  // Extraer info del link sin abrir el browser
+  const box = document.getElementById('preview-box');
+  const titulo = document.getElementById('prev_titulo');
+  const meta = document.getElementById('prev_meta');
+  const chips = document.getElementById('prev_chips');
+
+  // Parsear nombre de la URL
+  let nombre = '';
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split('/').filter(Boolean);
+    const last = parts[parts.length - 1] || '';
+    nombre = last.replace(/[-_]/g,' ').replace(/\d+/g,'').trim();
+    // Capitalizar
+    nombre = nombre.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  } catch(e) { nombre = 'Diseño 3D'; }
+
+  // Site
+  let sitio = 'Sitio externo', licencia = 'Verificar licencia manualmente';
+  if (url.includes('makerworld.com'))  { sitio='MakerWorld'; licencia='Verificar en página del diseño'; }
+  if (url.includes('thingiverse.com')) { sitio='Thingiverse'; licencia='Suele ser CC BY o CC BY-NC'; }
+  if (url.includes('printables.com'))  { sitio='Printables'; licencia='Suele ser CC BY o CC BY-NC'; }
+  if (url.includes('cults3d.com'))     { sitio='Cults3D'; licencia='Verificar — algunas son pagas'; }
+
+  titulo.textContent = nombre || 'Diseño desde ' + sitio;
+  meta.textContent = `${sitio} · ${licencia}`;
+  chips.innerHTML = `<span class="badge badge-azul">${sitio}</span> <a href="${url}" target="_blank" class="badge badge-verde" style="text-decoration:none">🔗 Abrir diseño</a>`;
+
+  // Pre-llenar nombre del producto
+  if (!gsv('cot_nombre') && nombre) document.getElementById('cot_nombre').value = nombre;
+  document.getElementById('ref').value = url;
+
+  box.classList.add('show');
+  toast('✅ Link analizado', 'ok');
+  calcCot();
+}
+
+function calcCot() {
+  const p = getParams();
+  const r = calcCostos(gv('cot_g'), gv('cot_h'), gv('cot_min'), gv('cot_otros'), document.getElementById('cot_mc')?.checked, p);
+  const pm = document.getElementById('cot_precio_manual')?.value ? gv('cot_precio_manual') : 0;
+  const { precio_cat, margen } = renderResultado({
+    costo:'cot_res_costo', sug:'cot_res_sug', cat:'cot_res_cat', mar:'cot_res_mar',
+    fil:'cd_fil', ene:'cd_ene', dep:'cd_dep', mant:'cd_mant', labor:'cd_labor', emp:'cd_emp', fallos:'cd_fallos', total:'cd_total'
+  }, r, pm);
+  _cotUltimo = { ...r, precio_cat, margen };
+}
+
+function guardarCot() {
+  if (!_cotUltimo) return;
+  const item = { ts: Date.now(), nombre: gsv('cot_nombre') || 'Sin nombre', cat: gsv('cot_cat'), estado: gsv('cot_estado'), ref: gsv('cot_url'), ..._cotUltimo };
+  historial.unshift(item);
+  localStorage.setItem('g3dl_hist', JSON.stringify(historial));
+  renderHist();
+  toast('💾 Guardado en historial', 'ok');
+}
+
+function enviarCotSheets() {
+  if (!_cotUltimo) return;
+  const item = { nombre: gsv('cot_nombre') || 'Sin nombre', cat: gsv('cot_cat'), estado: gsv('cot_estado'), ref: gsv('cot_url'), ..._cotUltimo };
+  enviarPayload(buildPayload(item));
+}
+
+// ════════════════════════════════
+// EQUIPO (TAB 3)
+// ════════════════════════════════
+const TC = 7.70; // tipo de cambio por defecto
+
+function calcTotalEquipo() {
+  return equipoItems.reduce((s, it) => {
+    const q = it.moneda === 'USD' ? it.monto * TC : it.monto;
+    return s + q;
+  }, 0);
+}
+
+function renderEquipo() {
+  const container = document.getElementById('equipo-items');
+  const tagColors = { impresora:'badge-azul', accesorio:'badge-azul', repuesto:'badge-naranja', herramienta:'badge-naranja', impuesto:'badge-rojo' };
+  container.innerHTML = equipoItems.map((it, i) => {
+    const q = it.moneda === 'USD' ? it.monto * TC : it.monto;
+    return `<div class="equipo-item">
+      <span class="eco-name">${it.nombre}</span>
+      <span class="badge ${tagColors[it.tag]||'badge-azul'}">${it.tag}</span>
+      <span class="eco-tag">${it.moneda === 'USD' ? `US$${it.monto.toFixed(2)} × ${TC}` : ''}</span>
+      <span class="eco-amt">Q ${q.toFixed(2)}</span>
+      <button onclick="eliminarItem(${i})" style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--gris-400)">✕</button>
+    </div>`;
+  }).join('');
+  calcEquipo();
+}
+
+function calcEquipo() {
+  const total = calcTotalEquipo();
+  document.getElementById('equipo-total-val').textContent = `Q ${total.toFixed(2)}`;
+  document.getElementById('depr_total_eq').textContent = `Q ${total.toFixed(0)}`;
+  const vida = gv('vida_eq') || 4000;
+  const rescate = gv('rescate') || 0;
+  const dh = (total - rescate) / vida;
+  document.getElementById('depr_hora').textContent = `Q ${dh.toFixed(4)}`;
+  // Recalcular todo
+  calcular();
+  calcCot();
+  localStorage.setItem('g3dl_equipo', JSON.stringify(equipoItems));
+}
+
+function agregarItem() {
+  const nombre = prompt('Nombre del ítem:');
+  if (!nombre) return;
+  const montoStr = prompt('Monto:');
+  const monto = parseFloat(montoStr);
+  if (!monto) return;
+  const moneda = confirm('¿Está en USD? (Cancelar = Quetzales)') ? 'USD' : 'Q';
+  const tag = prompt('Tipo (impresora/repuesto/herramienta/impuesto/accesorio):', 'repuesto') || 'repuesto';
+  equipoItems.push({ nombre, monto, moneda, tag });
+  renderEquipo();
+}
+
+function eliminarItem(i) {
+  equipoItems.splice(i, 1);
+  renderEquipo();
+}
+
+// ════════════════════════════════
+// PARÁMETROS (onChange)
+// ════════════════════════════════
+function onParamChange() { calcular(); calcCot(); calcEquipo(); }
+
+// ════════════════════════════════
+// HISTORIAL
+// ════════════════════════════════
+function buildMeta(catId, estadoId, refId) {
+  return { cat: gsv(catId), estado: gsv(estadoId), ref: gsv(refId) };
+}
+
+function renderHist() {
+  const el = document.getElementById('hist-list');
+  if (!historial.length) {
+    el.innerHTML = '<div style="color:var(--gris-400);font-size:0.85rem;padding:12px 0;text-align:center">Aún no hay productos guardados.</div>';
+    return;
+  }
+  el.innerHTML = historial.map((h, i) => {
+    const margenColor = h.margen >= 0.4 ? 'badge-verde' : h.margen >= 0.2 ? 'badge-naranja' : 'badge-rojo';
+    return `<div class="hist-item">
+      <span class="hist-name">${h.nombre}</span>
+      <span class="badge ${margenColor}">${(h.margen*100).toFixed(0)}%</span>
+      <span class="hist-price">Q ${h.precio_cat?.toFixed(0)||'—'}</span>
+      <button class="btn btn-sm btn-ghost" onclick="enviarHistItem(${i})">📤</button>
+    </div>`;
+  }).join('');
+}
+
+function limpiarHist() {
+  if (!confirm('¿Limpiar historial?')) return;
+  historial = [];
+  localStorage.removeItem('g3dl_hist');
+  renderHist();
+}
+
+function exportarCSV() {
+  if (!historial.length) { toast('No hay productos', 'err'); return; }
+  const cols = ['nombre','cat','costo','precio_cat','margen','ref'];
+  const rows = [cols.join(','), ...historial.map(h => cols.map(c => `"${(h[c]??'').toString().replace(/"/g,'""')}"`).join(','))];
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([rows.join('\n')], {type:'text/csv'})), download: `g3dl-${new Date().toISOString().slice(0,10)}.csv` });
+  a.click();
+}
+
+// ════════════════════════════════
+// GOOGLE SHEETS
+// ════════════════════════════════
+function guardarConfig() {
+  cfg.sheets_url = gsv('sheets_url');
+  cfg.sheets_id  = gsv('sheets_id');
+  localStorage.setItem('g3dl_cfg', JSON.stringify(cfg));
+}
+
+const catMap = {NAVIDAD:'NAV',NEGOCIOS:'NEG',HOGAR:'HOG',MASCOTAS:'MAS',JUGUETES:'JUG',
+                DECORACION:'DEC',LLAVEROS:'LLA',TECNOLOGIA:'TEC',ORGANIZADORES:'ORG',VEHICULOS:'VEH'};
+
+function buildPayload(item) {
+  const catCod = catMap[item.cat] || (item.cat||'XXX').slice(0,3).toUpperCase();
+  const num = String(historial.length + 151).padStart(3,'0');
+  return {
+    sheetId: cfg.sheets_id,
+    id: `G3DL-${catCod}-VAR-${num}`,
+    titulo: item.nombre,
+    categoria_id: item.cat||'',
+    categoria_nombre: item.cat||'',
+    subcategoria_id: item.cat||'',
+    subcategoria_nombre: item.cat||'',
+    producto_descripcion: item.descripcion||'',
+    precio: (item.precio_cat||0).toFixed(2),
+    estado: item.estado||'DISPONIBLE',
+    referencia: item.ref||''
+  };
+}
+
+async function enviarPayload(payload) {
+  if (!cfg.sheets_url) { toast('⚠️ Configura el Apps Script primero (tab Google Sheets)', 'err'); return; }
+  toast('⏳ Enviando…');
+  try {
+    await fetch(cfg.sheets_url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    toast(`✅ Enviado: ${payload.id}`, 'ok');
+  } catch(e) { toast('❌ Error: ' + e.message, 'err'); }
+}
+
+async function probarConexion() {
+  if (!cfg.sheets_url) { toast('Falta la URL', 'err'); return; }
+  try {
+    await fetch(cfg.sheets_url, { method:'GET', mode:'no-cors' });
+    toast('✅ Conexión OK', 'ok');
+  } catch(e) { toast('❌ Error: ' + e.message, 'err'); }
+}
+
+function enviarHistItem(i) { enviarPayload(buildPayload(historial[i])); }
+
+// ════════════════════════════════
+// TOAST
+// ════════════════════════════════
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = tipo;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// Recalcular al cambiar cualquier parámetro numérico
+document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', () => { calcular(); calcCot(); }));
+</script>
+</body>
+</html>

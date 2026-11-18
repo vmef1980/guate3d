@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Costos 3D — Guate 3D Labs</title>
+<style>
+  :root {
+    --azul: #1a56db;
+    --azul-claro: #e8f0fe;
+    --verde: #0f9d58;
+    --verde-claro: #e6f4ea;
+    --amarillo: #fbbc04;
+    --amarillo-claro: #fef9e7;
+    --rojo: #e53935;
+    --gris-bg: #f8f9fa;
+    --gris-borde: #dee2e6;
+    --texto: #212529;
+    --texto-suave: #6c757d;
+    --radio: 10px;
+    --sombra: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gris-bg); color: var(--texto); font-size: 15px; }
+
+  /* HEADER */
+  header { background: var(--azul); color: white; padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 1.3rem; font-weight: 700; }
+  header span { font-size: 0.85rem; opacity: 0.8; }
+  .logo { font-size: 1.8rem; }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+  @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
+
+  /* CARDS */
+  .card { background: white; border-radius: var(--radio); box-shadow: var(--sombra); padding: 20px; }
+  .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--gris-borde); display: flex; align-items: center; gap: 8px; }
+  .card h2 .ico { font-size: 1.1rem; }
+
+  /* FORM GRUPOS */
+  .grupo { margin-bottom: 14px; }
+  .grupo label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--texto-suave); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .grupo input, .grupo select { width: 100%; border: 1.5px solid var(--gris-borde); border-radius: 7px; padding: 8px 11px; font-size: 0.95rem; transition: border-color 0.2s; background: white; }
+  .grupo input:focus, .grupo select:focus { outline: none; border-color: var(--azul); }
+  .grupo .hint { font-size: 0.75rem; color: var(--texto-suave); margin-top: 3px; }
+
+  /* COLORES DE CELDA */
+  .input-azul input { background: #e8f0fe; }
+  .input-amarillo input { background: #fef9e7; }
+
+  /* SECCIONES DE PARÁMETROS */
+  .seccion-params { margin-bottom: 16px; }
+  .seccion-params h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--texto-suave); margin-bottom: 10px; }
+  .params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* RESULTADO */
+  .resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .resultado-item { background: var(--gris-bg); border-radius: 8px; padding: 12px; text-align: center; }
+  .resultado-item .etiqueta { font-size: 0.75rem; color: var(--texto-suave); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+  .resultado-item .valor { font-size: 1.5rem; font-weight: 800; }
+  .resultado-item.destacado { background: var(--azul); color: white; }
+  .resultado-item.destacado .etiqueta { color: rgba(255,255,255,0.8); }
+  .resultado-item.ok { background: var(--verde-claro); }
+  .resultado-item.ok .valor { color: var(--verde); }
+
+  /* DESGLOSE */
+  .desglose { font-size: 0.85rem; }
+  .desglose table { width: 100%; border-collapse: collapse; }
+  .desglose tr { border-bottom: 1px solid var(--gris-borde); }
+  .desglose tr:last-child { border-bottom: none; font-weight: 700; }
+  .desglose td { padding: 6px 4px; }
+  .desglose td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* BOTONES */
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--azul); color: white; }
+  .btn-primary:hover { background: #1346b8; }
+  .btn-success { background: var(--verde); color: white; }
+  .btn-success:hover { background: #0b8044; }
+  .btn-warning { background: var(--amarillo); color: #333; }
+  .btn-warning:hover { background: #f0a500; }
+  .btn-sm { padding: 7px 13px; font-size: 0.82rem; }
+  .btn-block { width: 100%; justify-content: center; margin-bottom: 10px; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .badge-verde { background: var(--verde-claro); color: var(--verde); }
+  .badge-azul { background: var(--azul-claro); color: var(--azul); }
+  .badge-amarillo { background: var(--amarillo-claro); color: #856404; }
+  .badge-rojo { background: #fdecea; color: var(--rojo); }
+
+  /* SHEET SECTION */
+  .sheet-section { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--gris-borde); }
+  .sheet-section h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .sheet-url-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .sheet-url-row input { flex: 1; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: white; padding: 12px 22px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; transition: transform 0.3s; z-index: 999; }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.ok { background: var(--verde); }
+  #toast.err { background: var(--rojo); }
+
+  /* HISTORIAL */
+  .historial-lista { max-height: 220px; overflow-y: auto; font-size: 0.82rem; }
+  .historial-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gris-borde); gap: 8px; }
+  .historial-item:last-child { border-bottom: none; }
+  .historial-item .nombre { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .historial-item .precio-h { color: var(--azul); font-weight: 700; white-space: nowrap; }
+
+  /* STEPS */
+  .steps { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .step { flex: 1; min-width: 80px; text-align: center; padding: 10px 6px; border-radius: 8px; background: var(--gris-bg); border: 2px solid var(--gris-borde); cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--texto-suave); transition: all 0.2s; }
+  .step.activo { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+  .step .step-num { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+
+  /* MULTICOLOR TOGGLE */
+  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .toggle-row label { font-size: 0.82rem; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; }
+  .toggle { position: relative; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 24px; cursor: pointer; transition: 0.3s; }
+  .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  .toggle input:checked + .toggle-slider { background: var(--azul); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+  .leyenda { font-size: 0.75rem; display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .leyenda span { display: flex; align-items: center; gap: 4px; }
+  .leyenda .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🖨️</div>
+  <div>
+    <h1>Calculadora de Costos 3D</h1>
+    <span>Guate 3D Labs — Guatemala</span>
+  </div>
+</header>
+
+<div class="container">
+  <!-- COLUMNA IZQUIERDA: PARÁMETROS -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <h2><span class="ico">⚙️</span> Parámetros de Guatemala</h2>
+
+      <div class="seccion-params">
+        <h3>🖨️ Equipo y depreciación</h3>
+        <div class="params-grid">
+          <div class="grupo input-azul">
+            <label>Impresora (Q)</label>
+            <input type="number" id="p_impresora" value="4199" step="1">
+            <div class="hint">Elegoo Centauri Carbon</div>
+          </div>
+          <div class="grupo input-azul">
+            <label>Canvas (US$)</label>
+            <input type="number" id="p_canvas_usd" value="55" step="1">
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Tipo de cambio</label>
+            <input type="number" id="p_tc" value="7.70" step="0.01">
+            <div class="hint">Q por US$</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Factor importación</label>
+            <input type="number" id="p_fi" value="1.40" step="0.05">
+            <div class="hint">flete + IVA + margen</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Vida útil (horas)</label>
+            <input type="number" id="p_vida" value="4000" step="100">
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Mant. Q/hora</label>
+            <input type="number" id="p_mant" value="0.60" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div class="seccion-params">
+        <h3>🧵 Filamento</h3>
+        <div class="params-grid">
+          <div class="grupo input-azul">
+            <label>PLA+ 1kg (Q)</label>
+            <input type="number" id="p_pla" value="169" step="1">
+            <div class="hint">La Electrónica / Creativo3D</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Merma PLA (%)</label>
+            <input type="number" id="p_merma" value="10" step="1">
+            <div class="hint">soportes + purga</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Merma extra multicolor (%)</label>
+            <input type="number" id="p_merma_mc" value="30" step="5">
+          </div>
+        </div>
+      </div>
+
+      <div class="seccion-params">
+        <h3>⚡ Energía (EEGSA)</h3>
+        <div class="params-grid">
+          <div class="grupo input-azul">
+            <label>Tarifa (Q/kWh)</label>
+            <input type="number" id="p_tarifa" value="1.51" step="0.01">
+            <div class="hint">Tarifa no social nov 2026</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Consumo (kW)</label>
+            <input type="number" id="p_kw" value="0.15" step="0.01">
+            <div class="hint">promedio PLA</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seccion-params">
+        <h3>👷 Trabajo y precio</h3>
+        <div class="params-grid">
+          <div class="grupo input-azul">
+            <label>Tu hora (Q)</label>
+            <input type="number" id="p_hora" value="25" step="5">
+          </div>
+          <div class="grupo input-azul">
+            <label>Empaque base (Q)</label>
+            <input type="number" id="p_empaque" value="2" step="0.5">
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Fallos (%)</label>
+            <input type="number" id="p_fallos" value="5" step="1">
+          </div>
+          <div class="grupo input-azul">
+            <label>Margen utilidad (%)</label>
+            <input type="number" id="p_margen" value="50" step="5">
+          </div>
+          <div class="grupo input-azul">
+            <label>Impuesto (%)</label>
+            <input type="number" id="p_imp" value="5" step="1">
+            <div class="hint">5% pequeño contribuyente</div>
+          </div>
+          <div class="grupo input-azul">
+            <label>Redondear a múlt. de (Q)</label>
+            <input type="number" id="p_redondeo" value="5" step="5">
+          </div>
+        </div>
+      </div>
+
+      <div class="leyenda">
+        <span><span class="dot" style="background:#e8f0fe;border:1px solid #aab"></span> Dato tuyo (azul)</span>
+        <span><span class="dot" style="background:#fef9e7;border:1px solid #cc9"></span> Estimado (amarillo)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUMNA DERECHA -->
+  <div>
+    <!-- CALCULADORA DEL PRODUCTO -->
+    <div class="card" style="margin-bottom:16px">
+      <h2><span class="ico">🧮</span> Producto a costear</h2>
+
+      <div class="steps">
+        <div class="step activo" onclick="irStep(1)" id="step1">
+          <span class="step-num">1️⃣</span>Datos del slicer
+        </div>
+        <div class="step" onclick="irStep(2)" id="step2">
+          <span class="step-num">2️⃣</span>Info del producto
+        </div>
+        <div class="step" onclick="irStep(3)" id="step3">
+          <span class="step-num">3️⃣</span>Resultado
+        </div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="panel1">
+        <div class="params-grid">
+          <div class="grupo input-amarillo">
+            <label>Gramos de filamento (g)</label>
+            <input type="number" id="gramos" value="80" step="1" oninput="calcular()">
+            <div class="hint">del slicer (sólo la pieza)</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Tiempo de impresión (h)</label>
+            <input type="number" id="horas" value="4" step="0.5" oninput="calcular()">
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Tiempo de trabajo (min)</label>
+            <input type="number" id="minutos" value="10" step="5" oninput="calcular()">
+            <div class="hint">retirar, limpiar, empacar</div>
+          </div>
+          <div class="grupo input-amarillo">
+            <label>Otros materiales (Q)</label>
+            <input type="number" id="otros" value="0" step="1" oninput="calcular()">
+            <div class="hint">imán, tornillo, led…</div>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <label>Multicolor (Canvas)</label>
+          <label class="toggle">
+            <input type="checkbox" id="multicolor" onchange="calcular()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="irStep(2)">Siguiente →</button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="panel2" style="display:none">
+        <div class="grupo">
+          <label>Nombre del producto</label>
+          <input type="text" id="nombre" placeholder="ej. Mano del Grinch Decoración Navideña" oninput="calcular()">
+        </div>
+        <div class="params-grid">
+          <div class="grupo">
+            <label>Categoría</label>
+            <select id="cat" onchange="actualizarSub()">
+              <option value="NAVIDAD">🎄 NAVIDAD</option>
+              <option value="NEGOCIOS">🏪 NEGOCIOS</option>
+              <option value="HOGAR">🏠 HOGAR</option>
+              <option value="MASCOTAS">🐾 MASCOTAS</option>
+              <option value="JUGUETES">🐉 JUGUETES</option>
+              <option value="DECORACION">🎨 DECORACION</option>
+              <option value="LLAVEROS">🗝️ LLAVEROS</option>
+              <option value="TECNOLOGIA">💻 TECNOLOGIA</option>
+              <option value="ORGANIZADORES">🗃️ ORGANIZADORES</option>
+              <option value="VEHICULOS">🚗 VEHICULOS</option>
+            </select>
+          </div>
+          <div class="grupo">
+            <label>Subcategoría</label>
+            <input type="text" id="sub" placeholder="ej. DECORACION">
+          </div>
+        </div>
+        <div class="params-grid">
+          <div class="grupo">
+            <label>Estado</label>
+            <select id="estado">
+              <option value="DISPONIBLE">DISPONIBLE</option>
+              <option value="PREVENTA">PREVENTA</option>
+              <option value="AGOTADO">AGOTADO</option>
+            </select>
+          </div>
+          <div class="grupo">
+            <label>Precio a cobrar (Q) — opcional</label>
+            <input type="number" id="precio_manual" placeholder="dejar vacío = usar sugerido" step="5" oninput="calcular()">
+            <div class="hint">vacío = usa el precio sugerido</div>
+          </div>
+        </div>
+        <div class="grupo">
+          <label>Descripción corta</label>
+          <input type="text" id="descripcion" placeholder="ej. Mano decorativa del Grinch para colgar en la pared">
+        </div>
+        <div class="grupo">
+          <label>Link de referencia (diseño STL)</label>
+          <input type="text" id="referencia" placeholder="https://makerworld.com/en/models/...">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-warning btn-sm" onclick="irStep(1)">← Atrás</button>
+          <button class="btn btn-primary btn-sm" onclick="irStep(3)">Ver resultado →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: RESULTADO -->
+      <div id="panel3" style="display:none">
+        <div class="resultado-grid">
+          <div class="resultado-item">
+            <div class="etiqueta">Costo total</div>
+            <div class="valor" id="res_costo">Q 0</div>
+          </div>
+          <div class="resultado-item ok">
+            <div class="etiqueta">Precio sugerido</div>
+            <div class="valor" id="res_sugerido">Q 0</div>
+          </div>
+          <div class="resultado-item destacado">
+            <div class="etiqueta">Precio en catálogo</div>
+            <div class="valor" id="res_catalogo">Q 0</div>
+          </div>
+          <div class="resultado-item">
+            <div class="etiqueta">Margen real</div>
+            <div class="valor" id="res_margen">0%</div>
+          </div>
+        </div>
+
+        <div class="desglose">
+          <table>
+            <tr><td>🧵 Filamento</td><td id="d_fil">—</td></tr>
+            <tr><td>⚡ Energía</td><td id="d_ene">—</td></tr>
+            <tr><td>📉 Depreciación</td><td id="d_dep">—</td></tr>
+            <tr><td>🔧 Mantenimiento</td><td id="d_mant">—</td></tr>
+            <tr><td>👷 Mano de obra</td><td id="d_labor">—</td></tr>
+            <tr><td>📦 Empaque y otros</td><td id="d_emp">—</td></tr>
+            <tr><td>❌ Fallos (provisión)</td><td id="d_fallos">—</td></tr>
+            <tr><td><strong>COSTO TOTAL</strong></td><td id="d_total">—</td></tr>
+          </table>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn btn-warning btn-sm" onclick="irStep(2)">← Editar</button>
+          <button class="btn btn-primary btn-sm" onclick="guardarHistorial()">💾 Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOOGLE SHEETS -->
+    <div class="card" style="margin-bottom:16px">
+      <h2><span class="ico">📊</span> Agregar a Google Sheets</h2>
+      <p style="font-size:0.83rem;color:var(--texto-suave);margin-bottom:12px">
+        Para agregar productos directamente necesitas un Google Apps Script como "puente".
+        Pega aquí la URL de tu Web App de Apps Script y el sistema enviará el producto.
+      </p>
+
+      <div class="sheet-url-row">
+        <div class="grupo" style="flex:1;margin:0">
+          <label>URL de tu Web App (Apps Script)</label>
+          <input type="text" id="sheets_url" placeholder="https://script.google.com/macros/s/.../exec" oninput="guardarConfig()">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <label>ID de tu Google Sheet</label>
+        <input type="text" id="sheets_id" placeholder="1Tkz... (de la URL del Sheet)" oninput="guardarConfig()">
+        <div class="hint">de https://docs.google.com/spreadsheets/d/<strong>ID</strong>/edit</div>
+      </div>
+
+      <button class="btn btn-success btn-block" onclick="enviarASheets()">
+        📤 Agregar producto al Sheet
+      </button>
+
+      <details style="margin-top:10px">
+        <summary style="font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--azul)">
+          📋 Instrucciones para configurar el Apps Script
+        </summary>
+        <div style="margin-top:10px;font-size:0.82rem;line-height:1.6;background:var(--gris-bg);padding:12px;border-radius:8px">
+          <strong>1.</strong> Abre tu Google Sheet → Extensiones → Apps Script<br>
+          <strong>2.</strong> Pega este código y guarda:<br>
+          <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px;border-radius:6px;font-size:0.78rem;overflow-x:auto;margin:8px 0">function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.openById(data.sheetId);
+  var sheet = ss.getSheetByName("Productos") || ss.getSheets()[0];
+  sheet.appendRow([
+    data.id, data.titulo, "", "", data.categoria_id,
+    data.categoria_nombre, data.subcategoria_id, data.subcategoria_nombre,
+    data.producto_descripcion, data.precio, data.estado, "", data.referencia
+  ]);
+  return ContentService.createTextOutput(
+    JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput(
+    JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+          <strong>3.</strong> Implementar → Nueva implementación → Tipo: Aplicación web<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Ejecutar como: <em>Yo</em> · Acceso: <em>Cualquier usuario</em><br>
+          <strong>4.</strong> Copia la URL y pégala arriba.<br>
+          <strong>5.</strong> Coloca el ID del Sheet en el segundo campo.
+        </div>
+      </details>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="card">
+      <h2><span class="ico">📋</span> Historial de esta sesión</h2>
+      <div class="historial-lista" id="historial">
+        <div style="color:var(--texto-suave);font-size:0.83rem;padding:8px 0">Aún no has guardado ningún producto.</div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+        <button class="btn btn-warning btn-sm" onclick="limpiarHistorial()">🗑️ Limpiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">Listo</div>
+
+<script>
+// ---- ESTADO ----
+let historial = JSON.parse(localStorage.getItem('g3dl_historial') || '[]');
+let config = JSON.parse(localStorage.getItem('g3dl_config') || '{}');
+
+// ---- INIT ----
+window.onload = () => {
+  if (config.sheets_url) document.getElementById('sheets_url').value = config.sheets_url;
+  if (config.sheets_id)  document.getElementById('sheets_id').value  = config.sheets_id;
+  renderHistorial();
+  calcular();
+};
+
+// ---- PARÁMETROS ----
+function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function gs(id) { return document.getElementById(id).value.trim(); }
+
+function calcular() {
+  const gramos  = g('gramos');
+  const horas   = g('horas');
+  const minutos = g('minutos');
+  const otros   = g('otros');
+  const mc      = document.getElementById('multicolor').checked;
+
+  // Params
+  const impresora   = g('p_impresora');
+  const canvas_usd  = g('p_canvas_usd');
+  const tc          = g('p_tc');
+  const fi          = g('p_fi');
+  const vida        = g('p_vida');
+  const mant        = g('p_mant');
+  const pla_kg      = g('p_pla');
+  const merma_pct   = g('p_merma') / 100;
+  const merma_mc    = g('p_merma_mc') / 100;
+  const tarifa      = g('p_tarifa');
+  const kw          = g('p_kw');
+  const hora_labor  = g('p_hora');
+  const empaque_base= g('p_empaque');
+  const fallos_pct  = g('p_fallos') / 100;
+  const margen_pct  = g('p_margen') / 100;
+  const imp_pct     = g('p_imp') / 100;
+  const redondeo    = g('p_redondeo') || 1;
+
+  const canvas_q   = canvas_usd * tc * fi;
+  const depr_hora  = (impresora + canvas_q) / vida;
+
+  // Merma total según multicolor
+  const merma = mc ? (merma_pct + merma_mc) : merma_pct;
+  const gramos_total = gramos * (1 + merma);
+  const pla_por_g    = pla_kg / 1000;
+
+  const c_fil    = gramos_total * pla_por_g;
+  const c_ene    = horas * kw * tarifa;
+  const c_dep    = horas * depr_hora;
+  const c_mant   = horas * mant;
+  const c_labor  = (minutos / 60) * hora_labor;
+  const c_emp    = empaque_base + otros;
+  const subtotal = c_fil + c_ene + c_dep + c_mant + c_labor + c_emp;
+  const c_fallos = subtotal * fallos_pct;
+  const costo    = subtotal + c_fallos;
+
+  // Precio sugerido: costo / (1 - margen - impuesto)
+  const precio_min = costo / (1 - margen_pct - imp_pct);
+  // Redondear hacia arriba
+  const precio_sug = Math.ceil(precio_min / redondeo) * redondeo;
+
+  // Precio catálogo: manual si se puso, si no = sugerido
+  const pm = document.getElementById('precio_manual').value;
+  const precio_cat = pm ? parseFloat(pm) : precio_sug;
+  const margen_real = precio_cat > 0 ? (precio_cat - costo) / precio_cat : 0;
+
+  // ---- UI ----
+  const fmt = v => `Q ${v.toFixed(2)}`;
+  document.getElementById('res_costo').textContent    = fmt(costo);
+  document.getElementById('res_sugerido').textContent = fmt(precio_sug);
+  document.getElementById('res_catalogo').textContent = fmt(precio_cat);
+  document.getElementById('res_margen').textContent   = `${(margen_real*100).toFixed(1)}%`;
+
+  document.getElementById('d_fil').textContent    = fmt(c_fil);
+  document.getElementById('d_ene').textContent    = fmt(c_ene);
+  document.getElementById('d_dep').textContent    = fmt(c_dep);
+  document.getElementById('d_mant').textContent   = fmt(c_mant);
+  document.getElementById('d_labor').textContent  = fmt(c_labor);
+  document.getElementById('d_emp').textContent    = fmt(c_emp);
+  document.getElementById('d_fallos').textContent = fmt(c_fallos);
+  document.getElementById('d_total').textContent  = fmt(costo);
+
+  // Color margen
+  const el = document.getElementById('res_margen');
+  el.style.color = margen_real >= 0.4 ? 'var(--verde)' : margen_real >= 0.2 ? 'var(--amarillo)' : 'var(--rojo)';
+
+  // Guardar para usar en envío
+  window._ultimo = {
+    costo, precio_sug, precio_cat, margen_real,
+    c_fil, c_ene, c_dep, c_mant, c_labor, c_emp, c_fallos,
+    gramos, horas, mc
+  };
+}
+
+// ---- STEPS ----
+function irStep(n) {
+  calcular();
+  for (let i=1;i<=3;i++) {
+    document.getElementById(`panel${i}`).style.display = i===n ? 'block' : 'none';
+    document.getElementById(`step${i}`).classList.toggle('activo', i===n);
+  }
+}
+
+// ---- SUBCATS ----
+const subcats = {
+  NAVIDAD:      ['ADORNOS','NACIMIENTO','REGALOS','DECORACION'],
+  NEGOCIOS:     ['ROTULOS','MOSTRADORES','SEÑALETICA'],
+  HOGAR:        ['COCINA','BANO','ORGANIZACION','VARIOS'],
+  MASCOTAS:     ['PLACAS','ACCESORIOS'],
+  JUGUETES:     ['ARTICULADOS','FIDGET','ROMPECABEZAS'],
+  DECORACION:   ['MACETAS','LAMINAS','VARIOS'],
+  LLAVEROS:     ['LLAVEROS'],
+  TECNOLOGIA:   ['GAMING','CABLES','AUDIO','VARIOS'],
+  ORGANIZADORES:['ESCRITORIO','ACCESORIOS'],
+  VEHICULOS:    ['VARIOS'],
+};
+function actualizarSub() {
+  const cat = gs('cat');
+  const list = subcats[cat] || [];
+  const sub = document.getElementById('sub');
+  if (list.length) sub.value = list[0];
+}
+
+// ---- HISTORIAL ----
+function guardarHistorial() {
+  if (!window._ultimo) return;
+  const item = {
+    ts: Date.now(),
+    nombre: gs('nombre') || 'Sin nombre',
+    costo: window._ultimo.costo,
+    precio: window._ultimo.precio_cat,
+    margen: window._ultimo.margen_real,
+    cat: gs('cat'), sub: gs('sub'), estado: gs('estado'),
+    descripcion: gs('descripcion'), referencia: gs('referencia'),
+    gramos: g('gramos'), horas: g('horas'), mc: document.getElementById('multicolor').checked
+  };
+  historial.unshift(item);
+  localStorage.setItem('g3dl_historial', JSON.stringify(historial));
+  renderHistorial();
+  toast('✅ Guardado en historial', 'ok');
+}
+
+function renderHistorial() {
+  const el = document.getElementById('historial');
+  if (!historial.length) {
+    el.innerHTML = '<div style="color:var(--texto-suave);font-size:0.83rem;padding:8px 0">Aún no has guardado ningún producto.</div>';
+    return;
+  }
+  el.innerHTML = historial.map((h,i) => `
+    <div class="historial-item">
+      <span class="nombre">${h.nombre}</span>
+      <span class="precio-h">Q ${h.precio.toFixed(0)}</span>
+      <span class="badge badge-azul">${(h.margen*100).toFixed(0)}%</span>
+      <button class="btn btn-sm" style="padding:3px 8px;font-size:0.75rem;background:#eee" onclick="enviarItemSheets(${i})">📤</button>
+    </div>
+  `).join('');
+}
+
+function limpiarHistorial() {
+  if (!confirm('¿Limpiar todo el historial?')) return;
+  historial = [];
+  localStorage.removeItem('g3dl_historial');
+  renderHistorial();
+}
+
+function exportarCSV() {
+  if (!historial.length) { toast('No hay productos guardados', 'err'); return; }
+  const cols = ['nombre','cat','sub','costo','precio','margen','gramos','horas','descripcion','referencia'];
+  const rows = [cols.join(',')];
+  historial.forEach(h => {
+    rows.push(cols.map(c => `"${(h[c]??'').toString().replace(/"/g,'""')}"`).join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `g3dl-costeo-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ---- GOOGLE SHEETS ----
+function guardarConfig() {
+  config.sheets_url = gs('sheets_url');
+  config.sheets_id  = gs('sheets_id');
+  localStorage.setItem('g3dl_config', JSON.stringify(config));
+}
+
+function buildPayload(item) {
+  // Generar ID tentativo (usuario puede ajustar en Sheet)
+  const catMap = {NAVIDAD:'NAV',NEGOCIOS:'NEG',HOGAR:'HOG',MASCOTAS:'MAS',JUGUETES:'JUG',
+                   DECORACION:'DEC',LLAVEROS:'LLA',TECNOLOGIA:'TEC',ORGANIZADORES:'ORG',VEHICULOS:'VEH'};
+  const catCod = catMap[item.cat] || item.cat.slice(0,3).toUpperCase();
+  const subCod = (item.sub||'VAR').slice(0,3).toUpperCase();
+  const num = String(historial.findIndex(h=>h===item)+151).padStart(3,'0');
+  return {
+    sheetId:            config.sheets_id,
+    id:                 `G3DL-${catCod}-${subCod}-${num}`,
+    titulo:             item.nombre,
+    categoria_id:       item.cat,
+    categoria_nombre:   item.cat,
+    subcategoria_id:    item.sub || item.cat,
+    subcategoria_nombre:item.sub || item.cat,
+    producto_descripcion: item.descripcion || '',
+    precio:             item.precio.toFixed(2),
+    estado:             item.estado || 'DISPONIBLE',
+    referencia:         item.referencia || ''
+  };
+}
+
+async function enviarASheets() {
+  calcular();
+  if (!window._ultimo) return;
+  if (!config.sheets_url) { toast('⚠️ Falta la URL del Apps Script', 'err'); return; }
+
+  // Construir item del formulario actual
+  const item = {
+    nombre: gs('nombre') || 'Sin nombre',
+    costo: window._ultimo.costo,
+    precio: window._ultimo.precio_cat,
+    margen: window._ultimo.margen_real,
+    cat: gs('cat'), sub: gs('sub'), estado: gs('estado'),
+    descripcion: gs('descripcion'), referencia: gs('referencia'),
+    gramos: g('gramos'), horas: g('horas'), mc: document.getElementById('multicolor').checked
+  };
+  await enviarPayload(buildPayload(item));
+}
+
+async function enviarItemSheets(idx) {
+  if (!config.sheets_url) { toast('⚠️ Falta la URL del Apps Script', 'err'); return; }
+  await enviarPayload(buildPayload(historial[idx]));
+}
+
+async function enviarPayload(payload) {
+  toast('⏳ Enviando…');
+  try {
+    const r = await fetch(config.sheets_url, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    // no-cors no devuelve body, asumimos ok si no hubo error de red
+    toast(`✅ Enviado: ${payload.id}`, 'ok');
+  } catch(e) {
+    toast('❌ Error de red: ' + e.message, 'err');
+  }
+}
+
+// ---- TOAST ----
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = tipo;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Recalcular si se cambia cualquier parámetro
+document.querySelectorAll('input[type=number]').forEach(el => {
+  el.addEventListener('input', calcular);
+});
+</script>
+</body>
+</html>
